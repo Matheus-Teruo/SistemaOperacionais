@@ -3,7 +3,7 @@
 
 using namespace std;
 
-Event::Event( int i, const string t, int m, int c) : instant(i), type(t), memory(m), cpuTime(c) {};
+Event::Event(int i, const string t, int m, int c) : instant(i), type(t), memory(m), cpuTime(c), next(nullptr) {};
 
 int Event::getInstant() const{
     return instant;

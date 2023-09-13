@@ -11,6 +11,7 @@ class Event{
     string getType() const;
     int getMemory() const;
     int getcpuTime() const;
+    Event* next;
 
   private:
     int instant;
