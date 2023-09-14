@@ -12,6 +12,7 @@ class LinkedList{
 
     void insertEmergency(int i, const string t, int m, int c);
     void insert(int i, const string t, int m, int c);
+    Event* takeEvent();
     void display() const;
 };
 

@@ -37,6 +37,12 @@ void LinkedList::insert(int i, const string t, int m, int c){
   temp->next = newEvent;
 };
 
+Event* LinkedList::takeEvent() {
+  Event* temp = head;
+  head = temp->next;
+  return temp;
+}
+
 void LinkedList::display() const{
   Event* temp = head;
   while (temp != nullptr) {
