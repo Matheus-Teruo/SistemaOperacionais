@@ -10,8 +10,7 @@ class LinkedList{
     Event* head;
     LinkedList();
 
-    void insertEmergency(int i, const string t, int m, int c);
-    void insert(int i, const string t, int m, int c);
+    void insert(int i, const string t, int f, int m, int c);
     Event* takeEvent();
     void display() const;
 };

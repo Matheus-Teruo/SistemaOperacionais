@@ -7,23 +7,8 @@ using namespace std;
 
 LinkedList::LinkedList() : head(nullptr){}
 
-void LinkedList::insertEmergency(int i, const string t, int m, int c){
-  Event* newEvent = new Event(i, t, m, c);
-  if (head == nullptr || head->getInstant() >= i) {
-    newEvent->next = head;
-    head = newEvent;
-    return;
-  }
-  Event* temp = head;
-  while (temp->next != nullptr && temp->next->getInstant() <= i){
-    temp = temp->next;
-  }
-  newEvent->next = temp->next;
-  temp->next = newEvent;
-};
-
-void LinkedList::insert(int i, const string t, int m, int c){
-  Event* newEvent = new Event(i, t, m, c);
+void LinkedList::insert(int i, const string t, int f, int m, int c){
+  Event* newEvent = new Event(i, t, f, m, c);
   if (head == nullptr || head->getInstant() > i) {
     newEvent->next = head;
     head = newEvent;
@@ -49,5 +34,4 @@ void LinkedList::display() const{
     cout << "Instant:" << temp->getInstant() << ", Event:" << temp->getType() << endl;
     temp = temp->next;
   }
-  cout << "NULL" << endl;
 };
