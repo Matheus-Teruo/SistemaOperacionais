@@ -27,10 +27,10 @@ LinkedList setup() {
   MemoryTree memorytask3 = MemoryTree({3,40,2,10,1,20,1,15});
   MemoryTree memorytask4 = MemoryTree({3,40,1,10,2,20,1,15});
 
-  eventlist.insert(20, "Task1", 1, &memorytask1, 60);
-  eventlist.insert(220, "Task3", 1, &memorytask2, 80);
-  eventlist.insert(20, "Task2", 1, &memorytask3, 120);
-  eventlist.insert(240, "Task4", 1, &memorytask4, 40); 
+  eventlist.insert(20, "Task1", 1, memorytask1, 60);
+  eventlist.insert(220, "Task3", 1, memorytask2, 80);
+  eventlist.insert(20, "Task2", 1, memorytask3, 120);
+  eventlist.insert(240, "Task4", 1, memorytask4, 40); 
 
   return eventlist;
 };

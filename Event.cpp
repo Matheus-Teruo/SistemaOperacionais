@@ -4,7 +4,7 @@
 
 using namespace std;
 
-Event::Event(int i, const string t, int f, MemoryTree* m, int c) : instant(i), type(t), flag(f), memory(m), cpuTime(c), next(nullptr) {};
+Event::Event(int i, const string t, int f, MemoryTree m, int c) : instant(i), type(t), flag(f), memory(&m), cpuTime(c), next(nullptr) {};
 
 int Event::getInstant() const{
   return instant;

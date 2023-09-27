@@ -8,7 +8,7 @@ using namespace std;
 
 LinkedList::LinkedList() : head(nullptr){}
 
-void LinkedList::insert(int i, const string t, int f, MemoryTree* m, int c){
+void LinkedList::insert(int i, const string t, int f, MemoryTree m, int c){
   Event* newEvent = new Event(i, t, f, m, c);
   if (head == nullptr || head->getInstant() > i) {
     newEvent->next = head;
