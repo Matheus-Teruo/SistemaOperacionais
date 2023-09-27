@@ -10,7 +10,7 @@ class LinkedList{
     Event* head;
     LinkedList();
 
-    void insert(int i, const string t, int f, int m, int c);
+    void insert(int i, const string t, int f, MemoryTree* m, int c);
     Event* takeEvent();
     void display() const;
 };

@@ -6,10 +6,12 @@ using namespace std;
 
 class Event{
   public:
-    Event(int i, const string t, int f, int m, int c);
+    Event(int i, const string t, int f, MemoryTree* m, int c);
     int getInstant() const;
     string getType() const;
     int getFlag() const;
+    int getTotalMemory() const;
+    MemoryTree* getMemoryTree() const;
     int getMemory() const;
     int getcpuTime() const;
     Event* next;
@@ -18,7 +20,7 @@ class Event{
     int instant;
     string type;
     int flag;
-    int memory;
+    MemoryTree* memory;
     int cpuTime;
 };
 

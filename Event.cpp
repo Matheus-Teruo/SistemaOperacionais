@@ -1,26 +1,35 @@
 #include "Event.h"
+#include "MemoryTree.h"
 #include <string>
 
 using namespace std;
 
-Event::Event(int i, const string t, int f, int m, int c) : instant(i), type(t), flag(f), memory(m), cpuTime(c), next(nullptr) {};
+Event::Event(int i, const string t, int f, MemoryTree* m, int c) : instant(i), type(t), flag(f), memory(m), cpuTime(c), next(nullptr) {};
 
 int Event::getInstant() const{
-    return instant;
+  return instant;
 };
 
 string Event::getType() const{
-    return type;
+  return type;
 };
 
 int Event::getFlag() const{
-    return flag;
+  return flag;
 }
 
+int Event::getTotalMemory() const{
+  return memory->TotalMemory();
+};
+
+MemoryTree* Event::getMemoryTree() const{
+  return memory;
+};
+
 int Event::getMemory() const{
-    return memory;
+  return memory->actual->getMemory();
 };
 
 int Event::getcpuTime() const {
-    return cpuTime;
+  return cpuTime;
 };
