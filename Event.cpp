@@ -4,7 +4,7 @@
 
 using namespace std;
 
-Event::Event(int i, const string t, int f, MemoryTree m, int c) : instant(i), type(t), flag(f), memory(&m), cpuTime(c), next(nullptr) {};
+Event::Event(int i, const string t, int f, MemoryTree* m, int c) : instant(i), type(t), flag(f), memory(m), cpuTime(c), status(0),next(nullptr) {};
 
 int Event::getInstant() const{
   return instant;
@@ -16,14 +16,14 @@ string Event::getType() const{
 
 int Event::getFlag() const{
   return flag;
-}
+};
+
+int Event::getStatus() const{
+  return status;
+};
 
 int Event::getTotalMemory() const{
   return memory->TotalMemory();
-};
-
-MemoryTree* Event::getMemoryTree() const{
-  return memory;
 };
 
 int Event::getMemory() const{
@@ -32,4 +32,20 @@ int Event::getMemory() const{
 
 int Event::getcpuTime() const {
   return cpuTime;
+};
+
+void Event::setInstant(int i){
+  instant = i;
+};
+
+void Event::setFlag(int f){
+  flag = f;
+};
+
+void Event::setStatus(int s){
+  status = s;
+};
+
+void Event::setcpuTime(int c){
+  cpuTime = c;
 };

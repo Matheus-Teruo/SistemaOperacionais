@@ -1,5 +1,6 @@
 #ifndef MEMORYTREE_H
 #define MEMORYTREE_H
+#include "MemoryNode.h"
 #include <list>
 
 using namespace std;
@@ -16,16 +17,6 @@ class MemoryTree{
   private:
     int totalmemory;
     int totalconditions;
-};
-
-class MemoryNode{
-  public:
-    MemoryNode(int m);
-    MemoryNode* right;
-    MemoryNode* left;
-    int getMemory() const;
-  private:
-    int memory;
 };
 
 #endif

@@ -12,8 +12,9 @@ using namespace std;
 
 // PC resources
 int memory = 300;//Mb
-int MaxmultiProg = 3;
-int MaxwaitListCPU = 5; // ???
+int MaxmultiProg = 5;
+int MaxwaitListCPU = 3; // ???
+int timeSlice = 30;
 // fila de entrada e saída
 // Uma fila única para o disco físico
 // Arquivos diversas filas, cada uma para controlar o acesso a um arquivo específico em uso
@@ -27,10 +28,10 @@ LinkedList setup() {
   MemoryTree memorytask3 = MemoryTree({3,40,2,10,1,20,1,15});
   MemoryTree memorytask4 = MemoryTree({3,40,1,10,2,20,1,15});
 
-  eventlist.insert(20, "Task1", 1, memorytask1, 60);
-  eventlist.insert(220, "Task3", 1, memorytask2, 80);
-  eventlist.insert(20, "Task2", 1, memorytask3, 120);
-  eventlist.insert(240, "Task4", 1, memorytask4, 40); 
+  eventlist.create(20, "Task1", 1, memorytask1, 61);
+  eventlist.create(220, "Task3", 1, memorytask2, 80);
+  eventlist.create(20, "Task2", 1, memorytask3, 120);
+  eventlist.create(240, "Task4", 1, memorytask4, 40); 
 
   return eventlist;
 };
@@ -44,8 +45,10 @@ void eventEngine(LinkedList eventlist){
 
   Event* event = nullptr;
   Event* eventFree;
-  queue<Event*> waitQ;
+  queue<Event*> waitProcessQ;
+  queue<Event*> waitCPUQ;
   Memory memorySistem(memory);
+  int auxTimeProcessing;
   while (simulation) {
     instant++;
     cout << "instante: " << instant << endl;
@@ -55,63 +58,101 @@ void eventEngine(LinkedList eventlist){
       int flag = event->getFlag();
       switch(flag){
         case 1: // ingresso do job ao sistema // EXEÇÃO lista de espera dos jobs
-          eventlist.insert(0, event->getType(), 2, event->getMemoryTree(), event->getcpuTime());
+          event->setInstant(0);
+          event->setFlag(2);
+          eventlist.insert(event);
           cout << "ingresso ao sistema do job: " << event->getType() << endl;
           break;
         case 2: // Alocação de memória // EXCEÇÃO lista de espera por memória OU não disponivel de alocar
           cout << "alocacao de memoria do job: " << event->getType() << endl;
-          int status = memorySistem.Loader(event->getType() ,event->getMemory());
-          if (status == -2){
-            cout << "nao ha memoria suficiente para alocar o job: " << event->getType() << endl;    
-            break;
-          } else if (status == -1){
-            cout << "nao ha espaço contíguo disponivel em memoria fisica para o job: " << event->getType() << endl;    
-            break;
-          } else{
-            cout << "job: " << event->getType() << ", alocado em: " << status << endl; 
-          }
-          eventlist.insert(0, event->getType(), 3, event->getMemoryTree(), event->getcpuTime());
+          //int status = memorySistem.Loader(event->getType() ,event->getMemory());
+          //if (status == -2){
+          //  cout << "nao ha memoria suficiente para alocar o job: " << event->getType() << endl;    
+          //  break;
+          //} else if (status == -1){
+          //  cout << "nao ha espaço contíguo disponivel em memoria fisica para o job: " << event->getType() << endl;    
+          //  break;
+          //} else{
+          //  cout << "job: " << event->getType() << ", alocado em: " << status << endl; 
+          //}
+          event->setInstant(0);
+          event->setFlag(3);
+          eventlist.insert(event);
           break;
         case 3: // Alocação de processador // EXEÇÃO lista de espera por processador
-          if (cpuUsage){
-            waitQ.push(event);
-            cout << "entrada na lista de espera por processador, do job: " << event->getType() << endl;
-            break;
+          // if (cpuUsage){
+          //   waitProcessQ.push(event);
+          //   cout << "entrada na lista de espera por processador, do job: " << event->getType() << endl;
+          //   break;
+          // }
+          if (event->getStatus() == 0){
+            cout << "puxando da lista" << endl;
+            if (waitCPUQ.size() >= MaxwaitListCPU){
+              waitProcessQ.push(event);
+              break;
+            } else {
+              event->setStatus(1);
+              waitCPUQ.push(event);
+            };
           }
           cpuUsage = true;
-          prev_termino = instant + event->getcpuTime();
-          eventlist.insert(prev_termino, event->getType(), 4, event->getMemoryTree(), event->getcpuTime());
+          auxTimeProcessing = event->getcpuTime();
+          if(auxTimeProcessing >= timeSlice){
+            prev_termino = timeSlice + instant;
+            event->setcpuTime(auxTimeProcessing - timeSlice);
+          } else {
+            prev_termino = instant + auxTimeProcessing;
+            event->setcpuTime(0);
+          }
+          event->setInstant(prev_termino);
+          event->setFlag(4);
+          eventlist.insert(event);
           cout << "alocacao de processador do job: " << event->getType() << endl;
           break;
         case 4: // Liberação de processador
           cout << "liberacao de processador do job: " << event->getType() << endl;
           cpuUsage = false;
-          if (!waitQ.empty()){
-            eventFree = waitQ.front();
-            waitQ.pop();
-            eventlist.insert(0, eventFree->getType(), 3, eventFree->getMemoryTree(), eventFree->getcpuTime());
+          if (event->getcpuTime() == 0){
+            waitCPUQ.pop();
+            cout << "aaaaa" << endl;
+            if (!waitProcessQ.empty()){
+              eventFree = waitProcessQ.front();
+              waitProcessQ.pop();
+              eventFree->setInstant(0);
+              eventFree->setFlag(3);
+              eventlist.insert(eventFree);
+            }
+            event->setInstant(0);
+            event->setFlag(5);
+            eventlist.insert(event);
+          } else {
+            waitCPUQ.pop();
+            cout << "realocando job " << event->getType() << " ao final da fila" << endl;
+            waitCPUQ.push(event);
+            
+            eventFree = waitCPUQ.front();
+            cout << "preparando job " << eventFree->getType() << " para processamento" << endl;
+            eventFree->setInstant(0);
+            eventFree->setFlag(3);
+            eventlist.insert(eventFree);
+            break;
           }
-          eventlist.insert(0, event->getType(), 5, event->getMemoryTree(), event->getcpuTime());
           break;
         case 5: // Liberação de memória
           cout << "liberacao de memoria do job: " << event->getType() << endl;
-          bool statusUnload = memorySistem.Unload(event->getType(), event->getMemory());
-          if (statusUnload){
-            cout << "job: " << event->getType() << ", desalocado" << endl;
-          } else if (!statusUnload){
-            cout << "erro ao desalocar o job: " << event->getType() << endl;    
-            break;
-          }
-          eventlist.insert(0, event->getType(), 6, event->getMemoryTree(), event->getcpuTime());
+          //bool statusUnload = memorySistem.Unload(event->getType(), event->getMemory());
+          //if (statusUnload){
+          //  cout << "job: " << event->getType() << ", desalocado" << endl;
+          //} else if (!statusUnload){
+          //  cout << "erro ao desalocar o job: " << event->getType() << endl;    
+          //  break;
+          //}
+          event->setInstant(0);
+          event->setFlag(6);
+          eventlist.insert(event);
           break;
         case 6: // Saída do sistema
           cout << "saida do sistema do job: " << event->getType() << endl;
-          cpuUsage = false;
-          if(!waitQ.empty()){
-            eventFree = waitQ.front();
-            waitQ.pop();
-            eventlist.insert(0, eventFree->getType(), 1, eventFree->getMemoryTree(), eventFree->getcpuTime());
-          }
           break;
       }
     }

@@ -1,4 +1,5 @@
 #include "MemoryTree.h"
+#include "MemoryNode.h"
 #include <list>
 
 using namespace std;
