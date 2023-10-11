@@ -6,31 +6,44 @@ using namespace std;
 
 MemoryTree::MemoryTree(list<int> tree){
   auto it = tree.begin();
+  int seg;
   if(*it == 1){
-    tree.erase(it++);
+    tree.erase(it++); 
     MemoryNode no = MemoryNode(*it);
+    totalMemory += *it;
+    maxSegment++;
     head = &no;
   }else if(*it == 2){
     tree.erase(it++);
     MemoryNode no = MemoryNode(*it);
+    totalMemory += *it;
+    seg++;
     head = &no;
     tree.erase(it++);
-    AuxFunc(tree, &no);
+    AuxFunc(tree, &no, seg);
   }else if(*it == 3){
+    totalConditions++;
     tree.erase(it++);
     MemoryNode no = MemoryNode(*it);
+    totalMemory += *it;
+    seg++;
     head = &no;
     tree.erase(it++);
-    AuxFunc(tree, &no);
-    AuxFunc(tree, &no);
+    AuxFunc(tree, &no, seg);
+    AuxFunc(tree, &no, seg);
   }
 };
 
-void MemoryTree::AuxFunc(list<int> tree, MemoryNode* head){
+void MemoryTree::AuxFunc(list<int> tree, MemoryNode* head, int segment){
   auto it = tree.begin();
+  int auxSeg;
   if(*it == 1){
     tree.erase(it++);
     MemoryNode no = MemoryNode(*it);
+    totalMemory += *it;
+    if (maxSegment < segment){
+      maxSegment = segment;
+    };
     if (head->right != nullptr){
       head->right = &no;
     }else{
@@ -39,34 +52,43 @@ void MemoryTree::AuxFunc(list<int> tree, MemoryNode* head){
   }else if(*it == 2){
     tree.erase(it++);
     MemoryNode no = MemoryNode(*it);
+    totalMemory += *it;
     tree.erase(it++);
     if (head->right != nullptr){
       head->right = &no;
     }else{
       head->left = &no;
     }
-    AuxFunc(tree, &no);
+    auxSeg = segment + 1;
+    AuxFunc(tree, &no, auxSeg);
   }else if(*it == 3){
+    totalConditions++;
     tree.erase(it++);
     MemoryNode no = MemoryNode(*it);
+    totalMemory += *it;
     tree.erase(it++);
     if (head->right != nullptr){
       head->right = &no;
     }else{
       head->left = &no;
     }
-    AuxFunc(tree, &no);
-    AuxFunc(tree, &no);
+    auxSeg = segment + 1;
+    AuxFunc(tree, &no, auxSeg);
+    AuxFunc(tree, &no, auxSeg);
   }
   return;
 };
 
-int MemoryTree::TotalMemory() const{
-  return totalmemory;
+int MemoryTree::getTotalMemory() const{
+  return totalMemory;
 };
 
-int MemoryTree::TotalConditional() const{
-  return totalconditions;
+int MemoryTree::getTotalConditional() const{
+  return totalConditions;
+};
+
+int MemoryTree::getMaxSegment() const{
+  return maxSegment;
 };
 
 MemoryNode::MemoryNode(int m): memory(m), right(nullptr), left(nullptr){};

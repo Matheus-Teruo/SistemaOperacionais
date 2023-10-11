@@ -23,7 +23,7 @@ int Event::getStatus() const{
 };
 
 int Event::getTotalMemory() const{
-  return memory->TotalMemory();
+  return memory->getTotalMemory();
 };
 
 int Event::getMemory() const{

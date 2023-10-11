@@ -23,15 +23,15 @@ int timeSlice = 30;
 
 LinkedList setup() {
   LinkedList eventlist;
-  MemoryTree memorytask1 = MemoryTree({1,30});
-  MemoryTree memorytask2 = MemoryTree({2,20,3,30,1,40,1,50});
+  MemoryTree memorytask1 = MemoryTree({2,30,1,50});
+  MemoryTree memorytask2 = MemoryTree({2,20,3,30,1,40,2,50,1,35});
   MemoryTree memorytask3 = MemoryTree({3,40,2,10,1,20,1,15});
-  MemoryTree memorytask4 = MemoryTree({3,40,1,10,2,20,1,15});
+  MemoryTree memorytask4 = MemoryTree({3,40,1,10,1,20});
 
-  eventlist.create(20, "Task1", 1, memorytask1, 61);
-  eventlist.create(220, "Task3", 1, memorytask2, 80);
-  eventlist.create(20, "Task2", 1, memorytask3, 120);
-  eventlist.create(240, "Task4", 1, memorytask4, 40); 
+  eventlist.create(20, "Task1", 1, memorytask1, (memorytask1.getMaxSegment()*timeSlice));
+  eventlist.create(220, "Task3", 1, memorytask2, (memorytask1.getMaxSegment()*timeSlice - 10));
+  eventlist.create(20, "Task2", 1, memorytask3, (memorytask1.getMaxSegment()*timeSlice));
+  eventlist.create(240, "Task4", 1, memorytask4, (memorytask1.getMaxSegment()*timeSlice - 20)); 
 
   return eventlist;
 };
@@ -54,7 +54,8 @@ void eventEngine(LinkedList eventlist){
     cout << "instante: " << instant << endl;
     while (eventlist.head->getInstant() <= instant){
       event = eventlist.takeEvent();
-      // cout << "Instante: " << event->getInstant() << ", Event: " << event->getType() << ", Flag: " << event->getFlag() << ", cpu_time: " << event->getcpuTime() << ", memory: " << event->getMemory() << endl;
+      cout << "Instante: " << event->getInstant() << ", Event: " << event->getType() << ", Flag: " << event->getFlag() << ", cpu_time: " << event->getcpuTime() << endl;
+      eventlist.display();
       int flag = event->getFlag();
       switch(flag){
         case 1: // ingresso do job ao sistema // EXEÇÃO lista de espera dos jobs
@@ -92,12 +93,17 @@ void eventEngine(LinkedList eventlist){
               break;
             } else {
               event->setStatus(1);
+              if (waitCPUQ.size() > 0){
+                waitCPUQ.push(event);
+                break;  
+              }
               waitCPUQ.push(event);
             };
           }
           cpuUsage = true;
           auxTimeProcessing = event->getcpuTime();
-          if(auxTimeProcessing >= timeSlice){
+          cout << auxTimeProcessing << endl;
+          if(auxTimeProcessing > timeSlice){
             prev_termino = timeSlice + instant;
             event->setcpuTime(auxTimeProcessing - timeSlice);
           } else {
@@ -114,7 +120,6 @@ void eventEngine(LinkedList eventlist){
           cpuUsage = false;
           if (event->getcpuTime() == 0){
             waitCPUQ.pop();
-            cout << "aaaaa" << endl;
             if (!waitProcessQ.empty()){
               eventFree = waitProcessQ.front();
               waitProcessQ.pop();
@@ -125,6 +130,14 @@ void eventEngine(LinkedList eventlist){
             event->setInstant(0);
             event->setFlag(5);
             eventlist.insert(event);
+            
+            if (waitCPUQ.size() > 0){
+              eventFree = waitCPUQ.front();
+              cout << "preparando job " << eventFree->getType() << " para processamento" << endl;
+              eventFree->setInstant(instant);
+              eventFree->setFlag(3);
+              eventlist.insert(eventFree);  
+            }
           } else {
             waitCPUQ.pop();
             cout << "realocando job " << event->getType() << " ao final da fila" << endl;
@@ -132,7 +145,7 @@ void eventEngine(LinkedList eventlist){
             
             eventFree = waitCPUQ.front();
             cout << "preparando job " << eventFree->getType() << " para processamento" << endl;
-            eventFree->setInstant(0);
+            eventFree->setInstant(instant);
             eventFree->setFlag(3);
             eventlist.insert(eventFree);
             break;

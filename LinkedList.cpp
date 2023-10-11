@@ -41,13 +41,17 @@ void LinkedList::insert(Event* e){
 Event* LinkedList::takeEvent() {
   Event* temp = head;
   head = temp->next;
+  temp->next = nullptr;
   return temp;
 };
 
 void LinkedList::display() const{
   Event* temp = head;
+  cout << "===================" << endl;
+  cout << "lista de eventos" << endl;
   while (temp != nullptr) {
     cout << "Instant:" << temp->getInstant() << ", Event:" << temp->getType() << endl;
     temp = temp->next;
   }
+  cout << "===================" << endl;
 };

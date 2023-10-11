@@ -8,15 +8,17 @@ using namespace std;
 class MemoryTree{
   public:
     MemoryTree(list<int> tree);
-    void AuxFunc(list<int> tree, MemoryNode* no);
-    int TotalMemory() const;
-    int TotalConditional() const;
+    void AuxFunc(list<int> tree, MemoryNode* no, int segment);
+    int getTotalMemory() const;
+    int getTotalConditional() const;
+    int getMaxSegment() const;
 
     MemoryNode* head;
     MemoryNode* actual;
   private:
-    int totalmemory;
-    int totalconditions;
+    int maxSegment;
+    int totalMemory;
+    int totalConditions;
 };
 
 #endif

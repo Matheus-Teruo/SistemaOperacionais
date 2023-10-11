@@ -9,6 +9,7 @@ class MemoryNode{
     MemoryNode* right;
     MemoryNode* left;
     int getMemory() const;
+    
   private:
     int memory;
 };
