@@ -22,11 +22,11 @@ int Event::getStatus() const{
   return status;
 };
 
-int Event::getTotalMemory() const{
-  return memory->getTotalMemory();
+MemoryTree* Event::getMemoryTree() const{
+  return memory;
 };
 
-int Event::getMemory() const{
+int Event::getMemoryActual() const{
   return memory->actual->getMemory();
 };
 

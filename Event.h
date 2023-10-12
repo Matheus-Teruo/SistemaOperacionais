@@ -12,8 +12,8 @@ class Event{
     string getType() const;
     int getFlag() const;
     int getStatus() const;
-    int getTotalMemory() const;
-    int getMemory() const;
+    MemoryTree* getMemoryTree() const;
+    int getMemoryActual() const;
     int getcpuTime() const;
 
     void setInstant(int i);

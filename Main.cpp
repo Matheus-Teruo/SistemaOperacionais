@@ -25,18 +25,13 @@ LinkedList setup() {
   LinkedList eventlist;
   MemoryTree* memorytask1 = new MemoryTree({2,30,1,50});
   MemoryTree* memorytask2 = new MemoryTree({2,20,3,30,1,40,2,50,1,35});
-  MemoryTree memorytask3 = MemoryTree({3,40,2,10,1,20,1,15});
-  MemoryTree memorytask4 = MemoryTree({3,40,1,10,1,20});
-
-  cout << memorytask1->getTotalMemory() << endl;
-  cout << memorytask2->getTotalMemory() << endl;
-  cout << memorytask3.getTotalMemory() << endl;
-  cout << memorytask4.getTotalMemory() << endl;
+  MemoryTree* memorytask3 = new MemoryTree({3,40,2,10,1,20,1,15});
+  MemoryTree* memorytask4 = new MemoryTree({3,40,1,10,1,20});
 
   eventlist.create(20, "Task1", 1, memorytask1, (memorytask1->getMaxSegment()*timeSlice));
-  eventlist.create(220, "Task3", 1, &memorytask3, (memorytask3.getMaxSegment()*timeSlice - 10));
+  eventlist.create(220, "Task3", 1, memorytask3, (memorytask3->getMaxSegment()*timeSlice - 10));
   eventlist.create(20, "Task2", 1, memorytask2, (memorytask2->getMaxSegment()*timeSlice));
-  eventlist.create(240, "Task4", 1, &memorytask4, (memorytask4.getMaxSegment()*timeSlice - 20)); 
+  eventlist.create(240, "Task4", 1, memorytask4, (memorytask4->getMaxSegment()*timeSlice - 20)); 
 
   return eventlist;
 };
@@ -59,7 +54,7 @@ void eventEngine(LinkedList eventlist){
     cout << "instante: " << instant << endl;
     while (eventlist.head->getInstant() <= instant){
       event = eventlist.takeEvent();
-      cout << "Instante: " << event->getInstant() << ", event: " << event->getType() << ", flag: " << event->getFlag() << ", cpu_time: " << event->getcpuTime() << ", all memory: " << event->getTotalMemory() << endl;
+      cout << "instante: " << event->getInstant() << ", event: " << event->getType() << ", flag: " << event->getFlag() << ", cpu time: " << event->getcpuTime() << ", all memory: " << event->getMemoryTree()->getTotalMemory() << ", actual memory:" << event->getMemoryActual() << endl;
       eventlist.display();
       int flag = event->getFlag();
       switch(flag){
