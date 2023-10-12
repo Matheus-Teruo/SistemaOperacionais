@@ -11,7 +11,7 @@ class LinkedList{
     Event* head;
     LinkedList();
 
-    void create(int i, const string t, int f, MemoryTree& m, int c);
+    void create(int i, const string t, int f, MemoryTree* m, int c);
     void insert(Event* e);
     Event* takeEvent();
     void display() const;

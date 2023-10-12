@@ -7,8 +7,8 @@ using namespace std;
 
 class MemoryTree{
   public:
-    MemoryTree(list<int> tree);
-    void AuxFunc(list<int> tree, MemoryNode* no, int segment);
+    MemoryTree(list<int> t);
+    void AuxFunc(MemoryNode* no, int segment);
     int getTotalMemory() const;
     int getTotalConditional() const;
     int getMaxSegment() const;
@@ -16,6 +16,8 @@ class MemoryTree{
     MemoryNode* head;
     MemoryNode* actual;
   private:
+    list<int>::iterator it;
+    list<int> tree;
     int maxSegment;
     int totalMemory;
     int totalConditions;
