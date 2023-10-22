@@ -1,13 +1,14 @@
-#ifndef EVENT_H
-#define EVENT_H
+#ifndef EVENTNODE_H
+#define EVENTNODE_H
 #include "MemoryTree.h"
 #include <string>
 
 using namespace std;
 
-class Event{
+class EventNode{
   public:
-    Event(int i, const string t, int f, MemoryTree* m, int c);
+    EventNode(int i, const string t, int f, MemoryTree* m, int c);
+
     int getInstant() const;
     string getType() const;
     int getFlag() const;
@@ -20,7 +21,7 @@ class Event{
     void setFlag(int f);
     void setStatus(int s);
     void setcpuTime(int c);
-    Event* next;
+    EventNode* next;
 
   private:
     int instant;

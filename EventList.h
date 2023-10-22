@@ -1,19 +1,19 @@
-#ifndef LINKEDLIST_H
-#define LINKEDLIST_H
-#include "Event.h"
+#ifndef EVENTLIST_H
+#define EVENTLIST_H
+#include "EventNode.h"
 #include "MemoryTree.h"
 #include <string>
 
 using namespace std;
 
-class LinkedList{
+class EventList{
   public:
-    Event* head;
-    LinkedList();
+    EventNode* head;
+    EventList();
 
     void create(int i, const string t, int f, MemoryTree* m, int c);
-    void insert(Event* e);
-    Event* takeEvent();
+    void insert(EventNode* e);
+    EventNode* takeEvent();
     void display() const;
 };
 
