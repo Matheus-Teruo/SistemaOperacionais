@@ -40,19 +40,16 @@ int Memory::Allocate(string t, MemoryTree* tree){
     endspace = location->start;
     if ((endspace - startspace) >= total){
       logicalMemory program = logicalMemory{t,startspace,total, 0};
-      cout << "alocou dessa forma: " << t << endl;
       Allocated.insert(location, program);
       Loader(t, tree->head, startspace);
       return startspace;
     }
     startspace = location->total + location->start + 1;
     ++location;
-    cout << "location +1" << endl;
   };
   endspace = memory;
   if ((endspace - startspace) >= total){
     logicalMemory program = logicalMemory{t,startspace,total};
-    cout << "alocou assim: " << t << endl;
     Allocated.insert(location, program);
     Loader(t, tree->head, startspace);
     return startspace;
@@ -70,7 +67,6 @@ void Memory::Loader(string t, MemoryNode* node ,int s){
   while (!lastsegment){
     total = aux->getMemory();
     int random = randomBinary();
-    cout << "\033[35m" << "random on Loader: " << random << "\033[0m" << endl;
     pointers[startspace] = logicalMemory{t, startspace, total, aux->getID()};
     if (branch == 0){
       lastsegment = true;
@@ -112,7 +108,6 @@ void Memory::Reallocate(string t, MemoryTree* tree, int s){
     newMapping *= 10;
   };
 
-  cout << "newMapping: " << newMapping << endl;
   if (node->getNext() == 1){
     node->setNext(2);
     node = node->left;
@@ -125,7 +120,6 @@ void Memory::Reallocate(string t, MemoryTree* tree, int s){
   newMapping *= 10;
   pointers[location] = logicalMemory{t, location, node->getMemory(), node->getID()};
   location += (node->getMemory() + 1);
-  cout << "newMapping: " << newMapping << endl;
   while (node->branch != 0){
     if (randomBinary() == 1 || node->branch == 1){
       node->setNext(1);
@@ -146,7 +140,6 @@ void Memory::Reallocate(string t, MemoryTree* tree, int s){
 
 int Memory::Unallocate(string t, MemoryTree* tree, bool k) {
   int start;
-  cout << "unallocate type: " << t << ", tree node: " << tree->current->getID() << endl;
   for (int i = 0; i < Allocated.size(); i++) {
     if (Allocated[i].type == t) {
       if (k){
@@ -176,26 +169,15 @@ void Memory::Unload(string t, MemoryNode* node, int s) {
   
   auto it = pointers.find(index);
   bool whileflag = true;
-  cout << "reverseMapping 1: " << reverseMapping << endl;
-  cout << "ID itvalue: " << it->second.ID << endl;
-  cout << "ID aux: " << aux->getID() << endl;
   while (whileflag){
-    cout << "Index: " << index << endl;
     int digit = reverseMapping % 10;
-    cout << "reverseMapping 2: " << reverseMapping << endl;
     reverseMapping /= 10;
-    cout << "reverseMapping 3: " << reverseMapping << endl;
     while (it->second.ID != aux->getID()){
       index += (it->second.total + 1);
       it = pointers.find(index);
-      cout << "ID itvalue inside: " << it->second.ID << endl;
       digit = reverseMapping % 10;
-      cout << "reverseMapping 4: " << reverseMapping << endl;
       reverseMapping /= 10;
-      cout << "reverseMapping 5: " << reverseMapping << endl;
       keepSegment += 1;
-      cout << "keepSegment: " << keepSegment << endl;
-      cout << "Index insise while: " << index << endl;
     }
 
     pointers.erase(it);
@@ -207,8 +189,6 @@ void Memory::Unload(string t, MemoryNode* node, int s) {
       } else if (digit == 2){
         aux = aux->left;
       }
-      cout << "ID aux inside: " << aux->getID() << endl;
-      cout << "reverseMapping 6: " << reverseMapping << endl;
       index += (it->second.total + 1);
       it = pointers.find(index);
       if (reverseMapping == 0){
@@ -220,11 +200,8 @@ void Memory::Unload(string t, MemoryNode* node, int s) {
   }
 
   if (keepSegment != 0){
-    cout << "\033[35m" << "MAPPING: " << mapping << endl;
     int numDigits = countDigits(mapping);
-    cout << "NUMdigits: " << numDigits << endl;
     int newMapping = mapping / (pow(10,(numDigits - keepSegment + 1)));
-    cout << "newMapping final: " << newMapping << "\033[0m" << endl;
     pointers[s] = logicalMemory{t, s, 5, newMapping};
   } else {
     it = pointers.find(s);
