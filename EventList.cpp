@@ -47,10 +47,10 @@ EventNode* EventList::takeEvent() {
 
 void EventList::display() const{
   EventNode* temp = head;
-  cout << "\033[36m" << "===================" << endl;
-  cout << "lista de eventos" << endl;
+  cout << "\033[36m" << "Lista de Eventos===" << endl;
   while (temp != nullptr) {
-    cout << "Instant:" << temp->getInstant() << ", Event:" << temp->getType() << endl;
+    cout << "Instant:" << temp->getInstant() << ", Event:" << temp->getType();
+    cout << ", Flag:" << temp->getFlag() << ", Status:" << temp->getStatus() << endl;
     temp = temp->next;
   }
   cout << "===================" << "\033[0m" << endl;

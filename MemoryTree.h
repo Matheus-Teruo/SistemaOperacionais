@@ -8,7 +8,7 @@ using namespace std;
 class MemoryTree{
   public:
     MemoryTree(list<int> t);
-    void AuxFunc(MemoryNode* no, int segment);
+    void AuxFunc(MemoryNode* no, int segment, int MaxMOverlay);
 
     int getTotalMemory() const;
     int getMaxMemoryOverlay() const;

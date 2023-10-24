@@ -130,7 +130,6 @@ void Memory::Reallocate(string t, MemoryTree* tree, int s){
       node = node->left;
       newMapping += 2;
     }
-    location += node->getMemory();
     pointers[location] = logicalMemory{t, location, node->getMemory(), node->getID()};
     newMapping *= 10;
   };
@@ -210,13 +209,13 @@ void Memory::Unload(string t, MemoryNode* node, int s) {
 }
 
 void Memory::Show(){
-  cout << "\033[33m" << "Allocated ========" << endl;
+  cout << "\033[33m" << "Allocated =========" << endl;
   for (const logicalMemory lm : Allocated) {
     cout << "Type: " << lm.type << ", ID: " << lm.ID << ", Start: " << lm.start << ", Total: " << lm.total << endl;
   }
-  cout << "Pointers ========" << endl;
+  cout << "Pointers ==========" << endl;
   for (const auto lm : pointers){
     cout << "Type: " << lm.second.type << ", ID: " << lm.second.ID << ", Start: " << lm.second.start << ", Total: " << lm.second.total << endl;
   }
-  cout << "========" << "\033[0m" << endl;
+  cout << "===================" << "\033[0m" << endl;
 }
