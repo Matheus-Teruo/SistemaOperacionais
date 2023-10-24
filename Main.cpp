@@ -126,7 +126,6 @@ void eventEngine(EventList eventlist){
           } else if (event->getStatus() == 1){  // Realocação do program
             cout << YELLOW << " Realocate: " << BOLD << event->getType() << RESET << endl;
             status = memorySistem.Unallocate(event->getType(), event->getMemoryTree(), false);
-            memorySistem.Show();
             memorySistem.Reallocate(event->getType(), event->getMemoryTree(), status);
             event->getMemoryTree()->changeNode();
             auto it = tasksBlocked.find(event->getType());
