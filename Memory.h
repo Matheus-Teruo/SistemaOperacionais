@@ -18,7 +18,7 @@ struct logicalMemory {
 class Memory{
   public:
     Memory(int m);
-    int Allocate(string t, MemoryTree* tree);  // return errors or position
+    int Allocate(string t, MemoryTree* tree, bool v);  // return errors or position
     void Loader(string t, MemoryNode* node, int s);
     void Reallocate(string t, MemoryTree* tree, int s);
     int Unallocate(string t, MemoryTree* tree, bool k);  // return position

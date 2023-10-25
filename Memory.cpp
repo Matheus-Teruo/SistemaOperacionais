@@ -29,7 +29,7 @@ int countDigits(int num) {
 
 Memory::Memory(int m): memory(m){};
 
-int Memory::Allocate(string t, MemoryTree* tree){
+int Memory::Allocate(string t, MemoryTree* tree, bool v){
   if (memory < (tree->getMaxMemoryOverlay() + 5)){return -2;}
   int startspace = 0;
   int endspace;
@@ -39,9 +39,11 @@ int Memory::Allocate(string t, MemoryTree* tree){
   while (location != Allocated.end()){
     endspace = location->start;
     if ((endspace - startspace) >= total){
-      logicalMemory program = logicalMemory{t,startspace,total, 0};
-      Allocated.insert(location, program);
-      Loader(t, tree->head, startspace);
+      if (v){
+        logicalMemory program = logicalMemory{t,startspace,total, 0};
+        Allocated.insert(location, program);
+        Loader(t, tree->head, startspace);
+      }
       return startspace;
     }
     startspace = location->total + location->start + 1;
@@ -49,9 +51,11 @@ int Memory::Allocate(string t, MemoryTree* tree){
   };
   endspace = memory;
   if ((endspace - startspace) >= total){
-    logicalMemory program = logicalMemory{t,startspace,total};
-    Allocated.insert(location, program);
-    Loader(t, tree->head, startspace);
+    if (v){
+      logicalMemory program = logicalMemory{t,startspace,total};
+      Allocated.insert(location, program);
+      Loader(t, tree->head, startspace);
+    }
     return startspace;
   }
   return -1;
