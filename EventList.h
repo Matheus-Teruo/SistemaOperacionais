@@ -11,7 +11,7 @@ class EventList{
     EventNode* head;
     EventList();
 
-    void create(int i, const string t, int f, MemoryTree* m, int c);
+    void create(int i, const string t, MemoryTree* m, int c);
     void insert(EventNode* e);
     EventNode* takeEvent();
     void display() const;

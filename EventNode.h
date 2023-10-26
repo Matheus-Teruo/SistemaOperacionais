@@ -7,14 +7,14 @@ using namespace std;
 
 class EventNode{
   public:
-    EventNode(int i, const string t, int f, MemoryTree* m, int c);
+    EventNode(int i, const string t, MemoryTree* m, int c);
 
     int getInstant() const;
     string getType() const;
     int getFlag() const;
     int getStatus() const;
     MemoryTree* getMemoryTree() const;
-    int getMemoryActual() const;
+    MemoryNode* getCurrentMemoryNode() const;
     int getcpuTime() const;
 
     void setInstant(int i);

@@ -46,8 +46,6 @@ MemoryTree::MemoryTree(list<int> t): tree(t), maxSegment(0), totalMemory(0), max
     tree.erase(it++);
     AuxFunc(no, seg, MaxMOverlay);
   }
-  delete &it;
-  delete &tree;
 };
 
 void MemoryTree::AuxFunc(MemoryNode* parent, int segment, int MaxMOverlay){

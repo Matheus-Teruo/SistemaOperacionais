@@ -36,7 +36,7 @@ int timeToMemoryProcess = 5;
 // cout << "instante: " << event->getInstant() << ", tipo de evento: " << "ingresso do job no sistema" << ", id do programa: " << event->getType() << ", ação executada: " << event << ", resultados: " << << endl;
 
 // Interrupções
-MemoryTree* memoryIMemory = new MemoryTree({1,10});
+MemoryTree* memoryIMemory = new MemoryTree({1,10,5});
 
 EventList setup() {
   EventList eventlist;
@@ -45,10 +45,10 @@ EventList setup() {
   MemoryTree* memorytask3 = new MemoryTree({3,40,20, 2,10,10, 1,20,50, 1,15,40});
   MemoryTree* memorytask4 = new MemoryTree({3,40,10, 1,10,30, 1,20,20});
 
-  eventlist.create(20, "Task1", 1, memorytask1, (memorytask1->getMaxSegment()*timeSlice));
-  eventlist.create(20, "Task2", 1, memorytask2, (memorytask2->getMaxSegment()*timeSlice));
-  eventlist.create(220, "Task3", 1, memorytask3, (memorytask3->getMaxSegment()*timeSlice - 10));
-  eventlist.create(240, "Task4", 1, memorytask4, (memorytask4->getMaxSegment()*timeSlice - 20)); 
+  eventlist.create(20, "Task1", memorytask1, memorytask1->head->getcpuTimeSeg());
+  eventlist.create(20, "Task2", memorytask2, memorytask2->head->getcpuTimeSeg());
+  eventlist.create(220, "Task3", memorytask3, memorytask3->head->getcpuTimeSeg());
+  eventlist.create(240, "Task4", memorytask4, memorytask4->head->getcpuTimeSeg()); 
   
   return eventlist;
 };
@@ -68,35 +68,45 @@ void eventEngine(EventList eventlist){
   queue<EventNode*> waitCPUQ;
 
   // Componentes do sistema
-  Memory memorySistem(memory);
+  Memory memorySystem(memory);
   
   // Variaveis auxiliar do sistema
   bool simulation = true;
   int instant = 0;
+  int CPUMARK = 0;
   int prev_termino;
   int status;
-  int auxTimeProcessing;
+  int cputime;
+  int timesliceleft;
   bool memoryUsage = false;
   bool cpuUsage = false; 
 
   while (simulation) {
     instant++;
+    CPUMARK--;
 
     if (cpuUsage){
-      cout << GREEN << "instante: " << instant << RESET << endl;
+      cout << GREEN;
     } else {
-      cout << RED << "instante: " << instant << RESET << endl;
+      cout << RED;
     }
+    if (cpuUsage){
+      cout << "instante: " << instant;
+      cout << ", CPU: " << CPUMARK << RESET << endl;
+    } else {
+      cout << "instante: " << instant << RESET << endl;
+    }
+
     while (eventlist.head->getInstant() <= instant){
       event = eventlist.takeEvent();
 
       // Print de retirada da lista
-      if (event->getStatus() != 2 && event->getStatus() != 3){  // Gambiarra para ajustar algumas interrupções
+      if (event->getStatus() != 2){  // Gambiarra para ajustar algumas interrupções
         cout << WHITE << BOLD << "instante: " << event->getInstant() 
         << ", " << event->getType()
         << ", cpu time: " << event->getcpuTime()
         << ", current memory ID: " << event->getMemoryTree()->current->getID()
-        << ", current memory:" << event->getMemoryActual() << RESET << endl;
+        << ", current memory:" << event->getCurrentMemoryNode()->getMemory() << RESET << endl;
       };
       
       //eventlist.display();  // mostrar eventos ainda dentro da lista
@@ -105,8 +115,8 @@ void eventEngine(EventList eventlist){
       switch(flag){
         // INGRESSO DO JOB AO SISTEMA
         case 1: 
-          cout << GREEN << "ingresso ao sistema do job: " << BOLD << event->getType() << RESET << endl;
           eventlist.display();
+          cout << GREEN << "ingresso ao sistema do job: " << BOLD << event->getType() << RESET << endl;
           event->setInstant(0);event->setFlag(2);
           eventlist.insert(event);
           break;
@@ -114,13 +124,13 @@ void eventEngine(EventList eventlist){
         // ALOCAÇÃO DE MEMÓRIA
         case 2:
           if (event->getStatus() == 0){  // Verifica alocação inicial do programa
-            status = memorySistem.Allocate(event->getType() ,event->getMemoryTree(), false);
+            status = memorySystem.Allocate(event->getType() ,event->getMemoryTree(), false);
             if (status == -2){  // Job maior que a memória
-              cout << YELLOW << "nao ha memoria suficiente para alocar o job: " << BOLD << event->getType() << RESET << endl;    
-              waitSpaceMemory.push(event);
+              cout << MAGENTA << "nao ha memoria suficiente para alocar o job: " << BOLD << event->getType() << RESET << endl;    
               break;
             } else if (status == -1){  // Não a espaço disponível
-              cout << MAGENTA << "nao ha espaço contiguo disponivel em memoria fisica para o job: " << BOLD << event->getType() << RESET << endl;    
+              cout << YELLOW << "nao ha espaço contiguo disponivel em memoria fisica para o job: " << BOLD << event->getType() << RESET << endl;    
+              waitSpaceMemory.push(event);
               break;
             };
             if (waitMemoryQ.empty()){
@@ -131,7 +141,7 @@ void eventEngine(EventList eventlist){
             waitMemoryQ.push(event);
 
           } else if (event->getStatus() == 1){  // Fim do processo de alocação
-            status = memorySistem.Allocate(event->getType() ,event->getMemoryTree(), true);
+            status = memorySystem.Allocate(event->getType() ,event->getMemoryTree(), true);
             if (status == -2){  // Job maior que a memória
               cout << YELLOW << "nao ha memoria suficiente para alocar o job: " << BOLD << event->getType() << RESET << endl;    
               waitSpaceMemory.push(event);
@@ -145,28 +155,20 @@ void eventEngine(EventList eventlist){
             waitMemoryQ.pop();
             event->setInstant(instant);event->setFlag(3);event->setStatus(0);
             eventlist.insert(event);
-            std::queue<EventNode*> tempQueue = waitMemoryQ;
-
-            // Print Elements from the copied queue
-            while (!tempQueue.empty()) {
-                std::cout << tempQueue.front()->getType() << " ";
-                tempQueue.pop();
-            }
             
             if (!waitMemoryQ.empty()){
-              cout << "funciona" << endl;
               eventFree = waitMemoryQ.front();
               waitMemoryQ.pop();
               eventFree->setInstant(0);
               eventlist.insert(eventFree);
             }
-            memorySistem.Show();
+            memorySystem.Show();
           }
           break;
 
         // ALOCAÇÃO DE PROCESSADOR OU FILA DE PROCESSAMENTO
         case 3:
-          if (event->getStatus() == 0){  // PRIMEIRA ENTRADA DA TASK
+          if (event->getStatus() == 0){  // triagem da task no CPU
             if ((waitCPUQ.size() + tasksBlocked.size()) >= MaxwaitListCPU){  // Número máximo de job processando
               waitProcessQ.push(event);
               break;
@@ -180,47 +182,54 @@ void eventEngine(EventList eventlist){
               waitCPUQ.push(event);
             };
           }
-          if (event->getStatus() == 1){  // Começo das task
-            auxTimeProcessing = event->getcpuTime();
+          status = event->getStatus();
+          if (status == 1){  // Começo das task
+            cputime = event->getcpuTime();
             cpuUsage = true;
-            if(auxTimeProcessing > timeSlice){  // Se o programa ainda tem tempo maior que o time slice
+            CPUMARK = timeSlice;
+            if(cputime > timeSlice){  // Se o programa ainda tem tempo maior que o time slice
               prev_termino = timeSlice + instant;
-              if (event->getMemoryTree()->current->branch == 0){
-                event->setInstant(prev_termino);event->setFlag(4);
-                event->setcpuTime(auxTimeProcessing - timeSlice);
-              } else if (randomBinary() == 1){  // Deixar levemente aleatório o momento de troca de segmento
-                event->setInstant(prev_termino - timeBeforeChangeSeg);event->setFlag(3);event->setStatus(2);  
-                event->setcpuTime(auxTimeProcessing - (timeSlice - timeBeforeChangeSeg));
-              } else{
-                event->setInstant(prev_termino - (timeBeforeChangeSeg * 2));event->setFlag(3);event->setStatus(3);
-                event->setcpuTime(auxTimeProcessing - (timeSlice - (timeBeforeChangeSeg * 2)));
-              }
-            } else {  // Caso programa tenha menos tempo que o próprio time slice 
-              prev_termino = instant + auxTimeProcessing;
               event->setInstant(prev_termino);event->setFlag(4);
+              event->setcpuTime(cputime - timeSlice);
+
+            } else {  // Caso programa tenha menos tempo que o próprio time slice
+              prev_termino = instant + cputime;
+              event->setInstant(prev_termino);
+              if (event->getCurrentMemoryNode()->branch == 0){
+                event->setFlag(4);
+              } else {
+                timesliceleft = timeSlice - cputime;
+                event->setFlag(3);event->setStatus(2);
+              }
               event->setcpuTime(0);
             };
 
             eventlist.insert(event);
             cout << GREEN << "alocacao de processador do job: " << BOLD << event->getType() << RESET << endl;
 
-          } else if (event->getStatus() == 2 || event->getStatus() == 3) {  // Verificar se vai ocorrer interrupção
-            int randomInt = randomBinary();
-            auxTimeProcessing = event->getcpuTime();
-            // cout << MAGENTA << "numero de aleatorização de interrupção: " << randomInt << RESET << endl;
-            if (randomInt == event->getMemoryTree()->current->getNext() || event->getMemoryTree()->current->branch == 1){  
+          } else if (status == 2) {  // Verificar se vai ocorrer interrupção
+            int randomInt = 0;
+            if (randomInt == event->getCurrentMemoryNode()->getNext() || event->getCurrentMemoryNode()->branch == 1){  
               // Confirma segmento ja carregado
-
-              if (event->getStatus() == 2){
-                event->setInstant(instant + timeBeforeChangeSeg);
-                event->setcpuTime(auxTimeProcessing - timeBeforeChangeSeg);
-              } else {
-                event->setInstant(instant + (timeBeforeChangeSeg*2));
-                event->setcpuTime(auxTimeProcessing - (timeBeforeChangeSeg*2));
-              };
               event->getMemoryTree()->changeNode();
-              event->setFlag(4); event->setStatus(1);
-              eventlist.insert(event);
+              event->setcpuTime(event->getCurrentMemoryNode()->getcpuTimeSeg());
+              cputime = event->getcpuTime();
+              if (cputime >= timesliceleft){  // Caso programa tenha mais tempo que o time slice left
+                event->setInstant(instant + timesliceleft);
+                event->setcpuTime(cputime - timesliceleft);
+                event->setFlag(4); event->setStatus(1);
+                eventlist.insert(event);
+              } else {  // Caso o programa tenha tempo menor que time slice left
+                timesliceleft = timesliceleft - cputime;
+                event->setInstant(instant + cputime);
+                event->setcpuTime(0);
+                if (event->getCurrentMemoryNode()->branch == 0){  // Caso seja o ultimo node
+                  event->setFlag(4); event->setStatus(1);
+                } else {
+                  event->setFlag(3); event->setStatus(2);
+                }
+                eventlist.insert(event);
+              }
 
             } else {  // Ocorrência de erro de segmento INTERRUPÇÃO DE MEMÓRIA
               waitCPUQ.pop();
@@ -228,12 +237,12 @@ void eventEngine(EventList eventlist){
               eventHandled = event;
               tasksBlocked[event->getType()] = event; // Bloquear a task
 
-              eventFree = new EventNode(0 ,"INTERRUPTION: MEMORY", 3, memoryIMemory, (memoryIMemory->getMaxSegment()*timeSlice - 25));
-              eventFree->setStatus(4);
+              eventFree = new EventNode(0 ,"INTERRUPTION: MEMORY", memoryIMemory, (memoryIMemory->getMaxSegment()*timeSlice - 25));
+              eventFree->setFlag(3);eventFree->setStatus(3);
               eventlist.insert(eventFree);
             }
 
-          } else {  // INTERRUPÇÃO
+          } else if (status) {  // INTERRUPÇÃO
             if (waitMemoryQ.empty()){
               eventHandled->setInstant(instant + timeToMemoryProcess);eventHandled->setFlag(5);eventHandled->setStatus(1);
               eventlist.insert(eventHandled);
@@ -286,9 +295,11 @@ void eventEngine(EventList eventlist){
         case 5:
           if (event->getStatus() == 1){
             cout << YELLOW << " Realocate: " << BOLD << event->getType() << RESET << endl;
-            status = memorySistem.Unallocate(event->getType(), event->getMemoryTree(), false);
-            memorySistem.Reallocate(event->getType(), event->getMemoryTree(), status);
+            status = memorySystem.Unallocate(event->getType(), event->getMemoryTree(), false);
+            memorySystem.Reallocate(event->getType(), event->getMemoryTree(), status);
+            memorySystem.Show();
             event->getMemoryTree()->changeNode();
+            event->setcpuTime(event->getCurrentMemoryNode()->getcpuTimeSeg());
             waitMemoryQ.pop();
             if (!waitMemoryQ.empty()){
               eventFree = waitMemoryQ.front();
@@ -313,7 +324,7 @@ void eventEngine(EventList eventlist){
         case 6:
           cout << GREEN << "desalocando memoria do job: " << BOLD << event->getType() << RESET << endl;
           event->getMemoryTree()->current = event->getMemoryTree()->head;
-          status = memorySistem.Unallocate(event->getType(), event->getMemoryTree(), true);
+          status = memorySystem.Unallocate(event->getType(), event->getMemoryTree(), true);
           if (status == -1){
             if (!waitSpaceMemory.empty()){
               eventFree = waitSpaceMemory.front();
@@ -321,7 +332,7 @@ void eventEngine(EventList eventlist){
               eventFree->setInstant(instant);eventFree->setFlag(2);
               eventlist.insert(eventFree);
             };
-            memorySistem.Show();
+            memorySystem.Show();
           } else {
             cout << MAGENTA << "erro ao desalocar o job: " << BOLD << event->getType() << RESET << endl;    
             break;

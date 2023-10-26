@@ -8,8 +8,8 @@ using namespace std;
 
 EventList::EventList() : head(nullptr){}
 
-void EventList::create(int i, const string t, int f, MemoryTree* m, int c){
-  EventNode* newEvent = new EventNode(i, t, f, m, c);
+void EventList::create(int i, const string t, MemoryTree* m, int c){
+  EventNode* newEvent = new EventNode(i, t, m, c);
   if (head == nullptr || head->getInstant() > i) {
     newEvent->next = head;
     head = newEvent;
@@ -56,7 +56,7 @@ void EventList::display() const{
   cout << "===================" << "\033[0m" << endl;
 };
 
-EventNode::EventNode(int i, const string t, int f, MemoryTree* m, int c) : instant(i), type(t), flag(f), memory(m), cpuTime(c), status(0),next(nullptr) {};
+EventNode::EventNode(int i, const string t, MemoryTree* m, int c) : instant(i), type(t), flag(1), memory(m), cpuTime(c), status(0),next(nullptr) {};
 
 int EventNode::getInstant() const{
   return instant;
@@ -78,8 +78,8 @@ MemoryTree* EventNode::getMemoryTree() const{
   return memory;
 };
 
-int EventNode::getMemoryActual() const{
-  return memory->current->getMemory();
+MemoryNode* EventNode::getCurrentMemoryNode() const{
+  return memory->current;
 };
 
 int EventNode::getcpuTime() const {

@@ -12,6 +12,7 @@ struct logicalMemory {
   string type;
   int start;
   int total;
+  int cputimeseg;
   int ID;
 };
 
