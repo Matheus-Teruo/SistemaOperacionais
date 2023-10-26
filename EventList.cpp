@@ -47,13 +47,24 @@ EventNode* EventList::takeEvent() {
 
 void EventList::display() const{
   EventNode* temp = head;
-  cout << "\033[36m" << "Lista de Eventos===" << endl;
+  bool auxOfPrint = false;
+  if (temp == nullptr){
+    auxOfPrint = true;
+    cout << "\033[96m" << "lista de eventos ===" << endl;
+  } else {
+    cout << "\033[96m" << "lista de eventos ==========================" << endl;
+  }
   while (temp != nullptr) {
     cout << "Instant:" << temp->getInstant() << ", Event:" << temp->getType();
     cout << ", Flag:" << temp->getFlag() << ", Status:" << temp->getStatus() << endl;
     temp = temp->next;
   }
-  cout << "===================" << "\033[0m" << endl;
+  if (auxOfPrint){
+    cout << "====================" << "\033[0m" << endl;
+  } else {
+    cout << "===========================================" << "\033[0m" << endl;
+  }
+  
 };
 
 EventNode::EventNode(int i, const string t, MemoryTree* m, int c) : instant(i), type(t), flag(1), memory(m), cpuTime(c), status(0),next(nullptr) {};

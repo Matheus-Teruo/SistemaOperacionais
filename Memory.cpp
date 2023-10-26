@@ -214,14 +214,23 @@ void Memory::Unload(string t, MemoryNode* node, int s) {
 }
 
 void Memory::Show(){
-  cout << "\033[33m" << "Allocated =========" << endl;
+  if (Allocated.empty()){
+    cout << "\033[33m" << "allocados ===" << endl;
+  } else {
+    cout << "\033[33m" << "allocados =========================================================" << endl;
+  }
+  
   for (const logicalMemory lm : Allocated) {
     cout << "Type: " << lm.type <<
     ", ID: " << lm.ID <<
     ", Start: " << lm.start <<
     ", Total Memory Overlay: " << lm.total << endl;
   }
-  cout << "Pointers ==========" << endl;
+  if (Allocated.empty()){
+    cout << "ponteiros ===" << endl;
+  } else {
+    cout << "ponteiros =========================================================" << endl;
+  }
   for (const auto lm : pointers){
     cout << "Type: " << lm.second.type <<
     ", ID: " << lm.second.ID <<
@@ -229,5 +238,9 @@ void Memory::Show(){
     ", Memory: " << lm.second.total <<
     ", CPU time: " << lm.second.cputimeseg << endl;
   }
-  cout << "===================" << "\033[0m" << endl;
+  if (Allocated.empty()){
+    cout << "=============" << "\033[0m" << endl;
+  } else {
+    cout << "===================================================================" << "\033[0m" << endl;
+  }
 }
