@@ -54,10 +54,12 @@ MemoryTree* memoryIMemory = new MemoryTree({1,10,5});
 
 EventList setup() {
   EventList eventlist;
-  MemoryTree* memorytask1 = new MemoryTree({2,30,20, 1,50,40});
-  MemoryTree* memorytask2 = new MemoryTree({2,20,25, 3,30,40, 1,40,100, 2,50,35, 1,35,20});
-  MemoryTree* memorytask3 = new MemoryTree({3,40,20, 2,10,10, 1,20,50, 1,15,40});
-  MemoryTree* memorytask4 = new MemoryTree({3,40,10, 1,10,30, 1,20,20});
+  // memoryTree{code, memory, cpu, disk, device1, device2}
+  // code => 1: endline, 2: parent with 1 children, 3: parent with 2 children
+  MemoryTree* memorytask1 = new MemoryTree({2,30,20,0,0,0, 1,50,40,0,0,0});
+  MemoryTree* memorytask2 = new MemoryTree({2,20,25,0,0,0, 3,30,40,0,2,0, 1,40,100,0,1,2, 2,50,35,0,0,1, 1,35,20,0,2,0});
+  MemoryTree* memorytask3 = new MemoryTree({3,40,20,0,1,0, 2,10,10,0,0,2, 1,20,50,0,0,1, 1,15,40,0,2,0});
+  MemoryTree* memorytask4 = new MemoryTree({3,40,10,0,0,0, 1,10,30,0,1,0, 1,20,20,0,0,1});
 
   eventlist.create(20, "Task1", memorytask1, memorytask1->head->getcpuTimeSeg());
   eventlist.create(20, "Task2", memorytask2, memorytask2->head->getcpuTimeSeg());
@@ -76,8 +78,9 @@ void eventEngine(EventList eventlist){
   // Filas de espera
   queue<EventNode*> waitSpaceMemory;
   queue<EventNode*> waitMemoryQ;
+  queue<EventNode*> waitIOPrinterQ;
+  queue<EventNode*> waitIOScannerQ;
   queue<EventNode*> waitProcessQ;
-
   map<string,EventNode*> tasksBlocked;
   queue<EventNode*> waitCPUQ;
 

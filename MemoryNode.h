@@ -5,7 +5,7 @@ using namespace std;
 
 class MemoryNode{
   public:
-    MemoryNode(int i, int m, int t);
+    MemoryNode(int i, int m, int t, int d, int io1, int io2);
     MemoryNode* right;
     MemoryNode* left;
     int branch;
@@ -19,6 +19,9 @@ class MemoryNode{
     int ID;
     int memory;
     int CPUTimeSeg;
+    int disk;
+    int device1;
+    int device2;
     int next;
 };
 

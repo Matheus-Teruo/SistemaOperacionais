@@ -8,22 +8,26 @@ using namespace std;
 MemoryTree::MemoryTree(list<int> t): tree(t), maxSegment(0), totalMemory(0), maxMemoryOverlay(0), totalConditions(0), auxID(0){
   it = tree.begin();
   int seg = 0; int MaxMOverlay = 0;
-  int memo;
+  int memo; int cpu; int disk; int device1; int device2;
   if(*it == 1){
-    tree.erase(it++);
-    memo = *it;
-    tree.erase(it++);
-    MemoryNode* no = new MemoryNode(auxID++, memo, *it);
+    tree.erase(it++);memo = *it;
+    tree.erase(it++);cpu = *it;
+    tree.erase(it++);disk = *it;
+    tree.erase(it++);device1 = *it;
+    tree.erase(it++);device2 = *it;
+    MemoryNode* no = new MemoryNode(auxID++, memo, cpu, disk, device1, device2);
     totalMemory += memo; maxMemoryOverlay += memo;
     maxSegment++; 
     current = head = no;
   }
   
   else if(*it == 2){
-    tree.erase(it++);
-    memo = *it;
-    tree.erase(it++);
-    MemoryNode* no = new MemoryNode(auxID++, memo, *it);
+    tree.erase(it++);memo = *it;
+    tree.erase(it++);cpu = *it;
+    tree.erase(it++);disk = *it;
+    tree.erase(it++);device1 = *it;
+    tree.erase(it++);device2 = *it;
+    MemoryNode* no = new MemoryNode(auxID++, memo, cpu, disk, device1, device2);
     totalMemory += memo; MaxMOverlay += memo;
     current = head = no;
     
@@ -34,10 +38,12 @@ MemoryTree::MemoryTree(list<int> t): tree(t), maxSegment(0), totalMemory(0), max
   
   else if(*it == 3){
     totalConditions++;
-    tree.erase(it++);
-    memo = *it;
-    tree.erase(it++);
-    MemoryNode* no = new MemoryNode(auxID++, memo, *it);
+    tree.erase(it++);memo = *it;
+    tree.erase(it++);cpu = *it;
+    tree.erase(it++);disk = *it;
+    tree.erase(it++);device1 = *it;
+    tree.erase(it++);device2 = *it;
+    MemoryNode* no = new MemoryNode(auxID++, memo, cpu, disk, device1, device2);
     totalMemory += memo; MaxMOverlay += memo;
     current = head = no;
     
@@ -50,12 +56,14 @@ MemoryTree::MemoryTree(list<int> t): tree(t), maxSegment(0), totalMemory(0), max
 
 void MemoryTree::AuxFunc(MemoryNode* parent, int segment, int MaxMOverlay){
   int auxSeg;
-  int memo;
+  int memo; int cpu; int disk; int device1; int device2;
   if(*it == 1){
-    tree.erase(it++);
-    memo = *it;
-    tree.erase(it++);
-    MemoryNode* no = new MemoryNode(auxID++, memo, *it);
+    tree.erase(it++);memo = *it;
+    tree.erase(it++);cpu = *it;
+    tree.erase(it++);disk = *it;
+    tree.erase(it++);device1 = *it;
+    tree.erase(it++);device2 = *it;
+    MemoryNode* no = new MemoryNode(auxID++, memo, cpu, disk, device1, device2);
     totalMemory += memo; MaxMOverlay += memo;
     auxSeg = segment + 1;
     if (maxSegment < auxSeg){maxSegment = auxSeg;};
@@ -70,10 +78,12 @@ void MemoryTree::AuxFunc(MemoryNode* parent, int segment, int MaxMOverlay){
   }
   
   else if(*it == 2){
-    tree.erase(it++);
-    memo = *it;
-    tree.erase(it++);
-    MemoryNode* no = new MemoryNode(auxID++, memo, *it);
+    tree.erase(it++);memo = *it;
+    tree.erase(it++);cpu = *it;
+    tree.erase(it++);disk = *it;
+    tree.erase(it++);device1 = *it;
+    tree.erase(it++);device2 = *it;
+    MemoryNode* no = new MemoryNode(auxID++, memo, cpu, disk, device1, device2);
     totalMemory += memo; MaxMOverlay += memo;
     auxSeg = segment + 1;
     tree.erase(it++);
@@ -90,10 +100,12 @@ void MemoryTree::AuxFunc(MemoryNode* parent, int segment, int MaxMOverlay){
   
   else if(*it == 3){
     totalConditions++;
-    tree.erase(it++);
-    memo = *it;
-    tree.erase(it++);
-    MemoryNode* no = new MemoryNode(auxID++, memo,*it);
+    tree.erase(it++);memo = *it;
+    tree.erase(it++);cpu = *it;
+    tree.erase(it++);disk = *it;
+    tree.erase(it++);device1 = *it;
+    tree.erase(it++);device2 = *it;
+    MemoryNode* no = new MemoryNode(auxID++, memo, cpu, disk, device1, device2);
     totalMemory += memo;  MaxMOverlay += memo;
     auxSeg = segment + 1;
     tree.erase(it++);
@@ -136,7 +148,7 @@ void MemoryTree::changeNode() {
   }
 }
 
-MemoryNode::MemoryNode(int i, int m, int t): ID(i), memory(m), CPUTimeSeg(t), next(0), right(nullptr), left(nullptr), branch(0){};
+MemoryNode::MemoryNode(int i, int m, int t, int d, int io1, int io2): ID(i), memory(m), CPUTimeSeg(t), disk(d), device1(io1), device2(io2), next(0), right(nullptr), left(nullptr), branch(0){};
 
 int MemoryNode::getID() const{
   return ID;
