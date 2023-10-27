@@ -56,7 +56,9 @@ void EventList::display() const{
   }
   while (temp != nullptr) {
     cout << "Instant:" << temp->getInstant() << ", Event:" << temp->getType();
-    cout << ", Flag:" << temp->getFlag() << ", Status:" << temp->getStatus() << endl;
+    cout << ", Flag:" << temp->getFlag() << ", Status:" << temp->getStatus();
+    cout << ", Printer:" << temp->getAllocation().device1;
+    cout << ", Scanner:" << temp->getAllocation().device2 << endl;
     temp = temp->next;
   }
   if (auxOfPrint){
@@ -67,7 +69,18 @@ void EventList::display() const{
   
 };
 
-EventNode::EventNode(int i, const string t, MemoryTree* m, int c) : instant(i), type(t), flag(1), memory(m), cpuTime(c), status(0),next(nullptr) {};
+EventNode::EventNode(int i, const string t, MemoryTree* m, int c) : 
+instant(i), type(t), flag(1), memory(m), cpuTime(c), status(0),next(nullptr) {
+  int aux1 = 0;
+  int aux2 = 0;
+  if (m->getUseDevice1() == 0){
+    aux1 = -1;
+  }
+  if (m->getUseDevice2() == 0){
+    aux2 = -1;
+  }
+  allocation = logicalAllocation{aux1,aux2};
+};
 
 int EventNode::getInstant() const{
   return instant;
@@ -93,6 +106,10 @@ MemoryNode* EventNode::getCurrentMemoryNode() const{
   return memory->current;
 };
 
+logicalAllocation EventNode::getAllocation() const{
+  return allocation;
+};
+
 int EventNode::getcpuTime() const {
   return cpuTime;
 };
@@ -107,6 +124,14 @@ void EventNode::setFlag(int f){
 
 void EventNode::setStatus(int s){
   status = s;
+};
+
+void EventNode::setAlDevice1(int a){
+  allocation.device1 = a;
+};
+
+void EventNode::setAlDevice2(int a){
+  allocation.device2 = a;
 };
 
 void EventNode::setcpuTime(int c){
