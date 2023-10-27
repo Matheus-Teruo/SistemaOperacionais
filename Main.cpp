@@ -39,7 +39,7 @@ bool showMemoryChanges = true;
 // PC resources
 int memory = 300; //Mb
 int timeToMemoryProcess = 5;
-int MaxDevice1 = 2;
+int MaxDevice1 = 1;
 int MaxDevice2 = 2;
 int MaxmultiProg = 5;  // ??? NÃO SEI SE USO AINDA
 int MaxwaitListCPU = 3;
@@ -112,10 +112,10 @@ void eventEngine(EventList eventlist){
         cout << RED;
       }
       if (cpuUsage){
-        cout << " instante: " << instant;
-        cout << ", CPU: " << CPUMARK << RESET << endl;
+        cout << " instante:" << instant;
+        cout << ", CPU:" << CPUMARK << RESET << endl;
       } else {
-        cout << " instante: " << instant << RESET << endl;
+        cout << " instante:" << instant << RESET << endl;
       }
     };
 
@@ -206,7 +206,7 @@ void eventEngine(EventList eventlist){
         case 3:
           if (event->getAllocation().device1 == 0){ // Device 1 Printer
             if (useIOPrinterQ.size() >= MaxDevice1){
-              cout << GREEN << "máxima alocacao do dispositivo 1, " << BOLD << event->getType() << UNBOLD << " na fila de espera" << RESET << endl;
+              cout << GREEN << "maxima alocacao do dispositivo 1, " << BOLD << event->getType() << UNBOLD << " na fila de espera" << RESET << endl;
               waitIOPrinterQ.push(event);
             } else {
               cout << GREEN << "impressora reservada para " << BOLD << event->getType() << RESET << endl;
@@ -216,7 +216,7 @@ void eventEngine(EventList eventlist){
           }
           if (event->getAllocation().device2 == 0){ // Device 2 Scanner
             if (useIOScannerQ.size() >= MaxDevice2){
-              cout << GREEN << "máxima alocacao do dispositivo 2, " << BOLD << event->getType() << UNBOLD << " na fila de espera" << RESET << endl;
+              cout << GREEN << "maxima alocacao do dispositivo 2, " << BOLD << event->getType() << UNBOLD << " na fila de espera" << RESET << endl;
               waitIOScannerQ.push(event);
             } else {
               cout << GREEN << "scanner reservado para " << BOLD << event->getType() << RESET << endl;
@@ -240,8 +240,8 @@ void eventEngine(EventList eventlist){
             } else {
               event->setStatus(1);
               if ((waitCPUQ.size()) > 0){  // Lista já tem item á frente
-                if (showInstantOfActions){cout << GREEN << "instante:" << instant << " ";}
-                cout << GREEN << " ," << BOLD << event->getType() << UNBOLD << " pronta, esperando CPU" << RESET << endl;
+                if (showInstantOfActions){cout << GREEN << "instante:" << instant << " ,";}
+                cout << GREEN << BOLD << event->getType() << UNBOLD << " pronta, esperando CPU" << RESET << endl;
                 waitCPUQ.push(event);
                 break;  
               }
@@ -402,34 +402,43 @@ void eventEngine(EventList eventlist){
 
         // DESALOCAR DISPOSITIVOS
         case 7:
+          status = 0; 
           if (event->getAllocation().device1 == 1){ // Desalocando dispositivo 1 Printer
             auto it = useIOPrinterQ.find(event->getType());
             if (it != useIOPrinterQ.end()){
+              cout << BLUE << "desalocando dispositivo 1, Scanner, para" << BOLD << event->getType() << RESET << endl;
               useIOPrinterQ.erase(it);
             } else {
-              cout << MAGENTA << "erro ao desalocar dispositivo 1" << endl; 
+              cout << MAGENTA << "erro ao desalocar dispositivo 1, Scanner, para" << BOLD << event->getType() << RESET << endl; 
+              break;
             };
             if (!waitIOPrinterQ.empty()){
               eventFree = waitIOPrinterQ.front();
+              cout << CYAN << "preparando dispositivo 1, Scanner, para alocar a " << BOLD << eventFree->getType() << RESET << endl;
               waitIOPrinterQ.pop();
-              eventFree->setInstant(instant);
-              eventFree->setFlag(3); 
+              status = 1;
             }
           }
           if (event->getAllocation().device2 == 1){ // Desalocando dispositivo 2 Scanner
             auto it = useIOScannerQ.find(event->getType());
             if (it != useIOScannerQ.end()){
+              cout << BLUE << "desalocando dispositivo 2, Scanner, para" << BOLD << event->getType() << RESET << endl;
               useIOScannerQ.erase(it);
             } else{
-              cout << MAGENTA << "erro ao desalocar dispositivo 1" << endl;
+              cout << MAGENTA << "erro ao desalocar dispositivo 2, Scanner, para" << BOLD << event->getType() << RESET << endl;
+              break;
             };
             if (!waitIOScannerQ.empty()){
               eventFree = waitIOScannerQ.front();
+              cout << CYAN << "preparando dispositivo 2, Scanner, para alocar a " << BOLD << eventFree->getType() << RESET << endl;
               waitIOScannerQ.pop();
-              eventFree->setInstant(instant);
-              eventFree->setFlag(3); 
-              eventlist.insert(eventFree);
+              status = 1;
             }
+          }
+          if (status == 1){
+            eventFree->setInstant(instant);
+            eventFree->setFlag(3);
+            eventlist.insert(eventFree);
           }
           event->setInstant(0);
           event->setFlag(8);
