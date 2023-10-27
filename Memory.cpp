@@ -40,7 +40,7 @@ int Memory::Allocate(string t, MemoryTree* tree, bool v){
     endspace = location->start;
     if ((endspace - startspace) >= total){
       if (v){
-        logicalMemory program = logicalMemory{t,startspace,total, 0, 0};
+        logicalMemory program = logicalMemory{t,startspace,total, 0, 0, 0, 0, 0};
         Allocated.insert(location, program);
         Loader(t, tree->head, startspace);
       }
@@ -52,7 +52,7 @@ int Memory::Allocate(string t, MemoryTree* tree, bool v){
   endspace = memory;
   if ((endspace - startspace) >= total){
     if (v){
-      logicalMemory program = logicalMemory{t,startspace,total, 0, 0};
+      logicalMemory program = logicalMemory{t,startspace,total, 0, 0, 0, 0, 0};
       Allocated.insert(location, program);
       Loader(t, tree->head, startspace);
     }
@@ -71,7 +71,8 @@ void Memory::Loader(string t, MemoryNode* node ,int s){
   while (!lastsegment){
     total = aux->getMemory();
     int random = randomBinary();
-    pointers[startspace] = logicalMemory{t, startspace, total, aux->getcpuTimeSeg(), aux->getID()};
+    pointers[startspace] = logicalMemory{t, startspace, total,
+    aux->getcpuT(), aux->getdisk(), aux->getdevice1(), aux->getdevice2(), aux->getID()};
     if (branch == 0){
       lastsegment = true;
     } else if (random == 1 || branch == 1){
@@ -89,7 +90,7 @@ void Memory::Loader(string t, MemoryNode* node ,int s){
     startspace += total + 1;
   };
   mapping /= 10;
-  pointers[s] = logicalMemory{t, s, 5, 0, mapping};
+  pointers[s] = logicalMemory{t, s, 5, 0, 0, 0, 0, mapping};
 };
 
 void Memory::Reallocate(string t, MemoryTree* tree, int s){
@@ -122,7 +123,8 @@ void Memory::Reallocate(string t, MemoryTree* tree, int s){
     newMapping += 1;
   };
   newMapping *= 10;
-  pointers[location] = logicalMemory{t, location, node->getMemory(), node->getcpuTimeSeg(), node->getID()};
+  pointers[location] = logicalMemory{t, location, node->getMemory(),
+  node->getcpuT(), node->getdisk(), node->getdevice1(), node->getdevice2(), node->getID()};
   location += (node->getMemory() + 1);
   while (node->branch != 0){
     if (randomBinary() == 1 || node->branch == 1){
@@ -134,11 +136,12 @@ void Memory::Reallocate(string t, MemoryTree* tree, int s){
       node = node->left;
       newMapping += 2;
     }
-    pointers[location] = logicalMemory{t, location, node->getMemory(), node->getcpuTimeSeg(), node->getID()};
+    pointers[location] = logicalMemory{t, location, node->getMemory(),
+    node->getcpuT(), node->getdisk(), node->getdevice1(), node->getdevice2(), node->getID()};
     newMapping *= 10;
   };
   newMapping /= 10;
-  pointers[s] = logicalMemory{t, s, 5, 0, newMapping};
+  pointers[s] = logicalMemory{t, s, 5, 0, 0, 0, 0, newMapping};
 };
 
 int Memory::Unallocate(string t, MemoryTree* tree, bool k) {
@@ -206,7 +209,7 @@ void Memory::Unload(string t, MemoryNode* node, int s) {
   if (keepSegment != 0){
     int numDigits = countDigits(mapping);
     int newMapping = mapping / (pow(10,(numDigits - keepSegment + 1)));
-    pointers[s] = logicalMemory{t, s, 5, 0, newMapping};
+    pointers[s] = logicalMemory{t, s, 5, 0, 0, 0, 0, newMapping};
   } else {
     it = pointers.find(s);
     pointers.erase(it);
@@ -223,7 +226,7 @@ void Memory::Show(){
   for (const logicalMemory lm : Allocated) {
     cout << "Type: " << lm.type <<
     ", ID: " << lm.ID <<
-    ", Start: " << lm.start <<
+    ", Start Position: " << lm.start <<
     ", Total Memory Overlay: " << lm.total << endl;
   }
   if (Allocated.empty()){
@@ -236,7 +239,10 @@ void Memory::Show(){
     ", ID: " << lm.second.ID <<
     ", Start Position: " << lm.second.start <<
     ", Memory: " << lm.second.total <<
-    ", CPU time: " << lm.second.cputimeseg << endl;
+    ", CPU time: " << lm.second.cputimeseg <<
+    ", Disk: " << lm.second.disk <<
+    ", IO1: " << lm.second.device1 <<
+    ", IO2: " << lm.second.device2 << endl;
   }
   if (Allocated.empty()){
     cout << "=============" << "\033[0m" << endl;

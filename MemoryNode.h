@@ -11,14 +11,17 @@ class MemoryNode{
     int branch;
     int getID() const;
     int getMemory() const;
-    int getcpuTimeSeg() const;
+    int getcpuT() const;
+    int getdisk() const;
+    int getdevice1() const;
+    int getdevice2() const;
     int getNext() const;
     void setNext(int n);
     
   private:
     int ID;
     int memory;
-    int CPUTimeSeg;
+    int cpuT;
     int disk;
     int device1;
     int device2;

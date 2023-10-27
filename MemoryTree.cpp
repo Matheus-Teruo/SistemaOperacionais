@@ -148,7 +148,7 @@ void MemoryTree::changeNode() {
   }
 }
 
-MemoryNode::MemoryNode(int i, int m, int t, int d, int io1, int io2): ID(i), memory(m), CPUTimeSeg(t), disk(d), device1(io1), device2(io2), next(0), right(nullptr), left(nullptr), branch(0){};
+MemoryNode::MemoryNode(int i, int m, int t, int d, int io1, int io2): ID(i), memory(m), cpuT(t), disk(d), device1(io1), device2(io2), next(0), right(nullptr), left(nullptr), branch(0){};
 
 int MemoryNode::getID() const{
   return ID;
@@ -158,8 +158,20 @@ int MemoryNode::getMemory() const{
   return memory;
 };
 
-int MemoryNode::getcpuTimeSeg() const{
-  return CPUTimeSeg;
+int MemoryNode::getcpuT() const{
+  return cpuT;
+}
+
+int MemoryNode::getdisk() const{
+  return disk;
+}
+
+int MemoryNode::getdevice1() const{
+  return device1;
+}
+
+int MemoryNode::getdevice2() const{
+  return device2;
 }
 
 int MemoryNode::getNext() const{

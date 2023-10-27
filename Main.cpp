@@ -34,7 +34,7 @@ bool showInstant = false;
 bool showInstantOfActions = true;
 bool showEventExtract = false;
 bool showListOfEvents = false;
-bool showMemoryChanges = false;
+bool showMemoryChanges = true;
 
 // PC resources
 int memory = 300;//Mb
@@ -61,10 +61,10 @@ EventList setup() {
   MemoryTree* memorytask3 = new MemoryTree({3,40,20,0,1,0, 2,10,10,0,0,2, 1,20,50,0,0,1, 1,15,40,0,2,0});
   MemoryTree* memorytask4 = new MemoryTree({3,40,10,0,0,0, 1,10,30,0,1,0, 1,20,20,0,0,1});
 
-  eventlist.create(20, "Task1", memorytask1, memorytask1->head->getcpuTimeSeg());
-  eventlist.create(20, "Task2", memorytask2, memorytask2->head->getcpuTimeSeg());
-  eventlist.create(220, "Task3", memorytask3, memorytask3->head->getcpuTimeSeg());
-  eventlist.create(240, "Task4", memorytask4, memorytask4->head->getcpuTimeSeg()); 
+  eventlist.create(20, "Task1", memorytask1, memorytask1->head->getcpuT());
+  eventlist.create(20, "Task2", memorytask2, memorytask2->head->getcpuT());
+  eventlist.create(220, "Task3", memorytask3, memorytask3->head->getcpuT());
+  eventlist.create(240, "Task4", memorytask4, memorytask4->head->getcpuT()); 
   
   return eventlist;
 };
@@ -244,7 +244,7 @@ void eventEngine(EventList eventlist){
             if (randomInt == event->getCurrentMemoryNode()->getNext() || event->getCurrentMemoryNode()->branch == 1){  
               // Confirma segmento ja carregado
               event->getMemoryTree()->changeNode();
-              event->setcpuTime(event->getCurrentMemoryNode()->getcpuTimeSeg());
+              event->setcpuTime(event->getCurrentMemoryNode()->getcpuT());
               cputime = event->getcpuTime();
               if (cputime >= timesliceleft){  // Caso programa tenha mais tempo que o time slice left
                 event->setInstant(instant + timesliceleft);
@@ -343,7 +343,7 @@ void eventEngine(EventList eventlist){
               memorySystem.Show();
             }
             event->getMemoryTree()->changeNode();
-            event->setcpuTime(event->getCurrentMemoryNode()->getcpuTimeSeg());
+            event->setcpuTime(event->getCurrentMemoryNode()->getcpuT());
             waitMemoryQ.pop();
             if (!waitMemoryQ.empty()){
               eventFree = waitMemoryQ.front();

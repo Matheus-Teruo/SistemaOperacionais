@@ -13,6 +13,9 @@ struct logicalMemory {
   int start;
   int total;
   int cputimeseg;
+  int disk;
+  int device1;
+  int device2;
   int ID;
 };
 
