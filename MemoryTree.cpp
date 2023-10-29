@@ -183,6 +183,14 @@ int MemoryNode::getNext() const{
   return next;
 }
 
+void MemoryNode::setdevice1(int s){
+  device1 = s;
+}
+
+void MemoryNode::setdevice2(int s){
+  device2 = s;
+}
+
 void MemoryNode::setNext(int n){
   next = n;
 }

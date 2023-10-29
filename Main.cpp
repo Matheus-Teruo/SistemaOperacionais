@@ -41,6 +41,8 @@ int memory = 300; //Mb
 int timeToMemoryProcess = 5;
 int MaxDevice1 = 1;
 int MaxDevice2 = 2;
+int timeWaitDevice1 = 5;
+int timeWaitDevice2 = 8;
 int MaxmultiProg = 5;  // ??? NÃO SEI SE USO AINDA
 int MaxwaitListCPU = 3;
 int timeSlice = 30;
@@ -52,6 +54,7 @@ int timeSlice = 30;
 
 // Interrupções
 MemoryTree* memoryIMemory = new MemoryTree({1,10,5,0,0,0});
+MemoryTree* memoryIDevice = new MemoryTree({1,10,5,0,0,0});
 
 EventList setup() {
   EventList eventlist;
@@ -79,10 +82,15 @@ void eventEngine(EventList eventlist){
   // Filas de espera
   queue<EventNode*> waitSpaceMemory;
   queue<EventNode*> waitMemoryQ;
+
   queue<EventNode*> waitIOPrinterQ;
   map<string,EventNode*> useIOPrinterQ;
+  queue<EventNode*> waitPrinterBusyQ;
+
   queue<EventNode*> waitIOScannerQ;
   map<string,EventNode*> useIOScannerQ;
+  queue<EventNode*> waitScannerBusyQ;
+
   queue<EventNode*> waitProcessQ;
   map<string,EventNode*> tasksBlocked;
   queue<EventNode*> waitCPUQ;
@@ -97,6 +105,11 @@ void eventEngine(EventList eventlist){
   int prev_termino;
   int status;
   int cputime;
+  bool device1Used = false;
+  bool device2Used = false;
+  int device1;
+  int device2;
+  int totaldevice;
   int timesliceleft;
   bool memoryUsage = false;
   bool cpuUsage = false; 
@@ -123,7 +136,7 @@ void eventEngine(EventList eventlist){
       event = eventlist.takeEvent();
 
       // Print de retirada da lista
-      if (event->getStatus() != 2 && showEventExtract){  // Gambiarra para ajustar algumas interrupções
+      if (event->getStatus() != 2 && event->getStatus() != 4 && showEventExtract){  // Gambiarra para ajustar algumas interrupções
         cout << WHITE << BOLD <<
         "instante: " << instant
         << ", chegada: " << event->getInstant() 
@@ -139,7 +152,7 @@ void eventEngine(EventList eventlist){
       int flag = event->getFlag();
       switch(flag){
         // INGRESSO DO JOB AO SISTEMA
-        case 1:
+        case 1:  // ==============================================================================================
           if (showListOfEvents){
             eventlist.display();
           };
@@ -150,7 +163,7 @@ void eventEngine(EventList eventlist){
           break;
           
         // ALOCAÇÃO DE MEMÓRIA
-        case 2:
+        case 2:  // ==============================================================================================
           if (event->getStatus() == 0){  // Verifica alocação inicial do programa
             status = memorySystem.Allocate(event->getType() ,event->getMemoryTree(), false);
             if (status == -2){  // Job maior que a memória
@@ -163,7 +176,7 @@ void eventEngine(EventList eventlist){
               waitSpaceMemory.push(event);
               break;
             };
-            if (waitMemoryQ.empty()){
+            if (waitMemoryQ.empty()){  // Execução imediata caso esteja vazio
               if (showInstantOfActions){cout << GREEN << "instante:" << instant << " ";}
               cout << GREEN << "inicio da alocacao de memoria do job: " << BOLD << event->getType() << RESET << endl;
               event->setInstant(instant + timeToMemoryProcess);event->setFlag(2);event->setStatus(1);
@@ -203,28 +216,28 @@ void eventEngine(EventList eventlist){
           break;
 
         // ALLOCAÇÃO DE DISPOSITIVOS
-        case 3:
-          if (event->getAllocation().device1 == 0){ // Device 1 Printer
-            if (useIOPrinterQ.size() >= MaxDevice1){
+        case 3:  // ==============================================================================================
+          if (event->getAllocation().device1 == 0){  // Device 1 Printer
+            if (useIOPrinterQ.size() >= MaxDevice1){  // Verifica se existe mais dispositivos alocados do que o máximo
               cout << GREEN << "maxima alocacao do dispositivo 1, " << BOLD << event->getType() << UNBOLD << " na fila de espera" << RESET << endl;
               waitIOPrinterQ.push(event);
-            } else {
+            } else {  // Alocação do dispositivo 1
               cout << GREEN << "impressora reservada para " << BOLD << event->getType() << RESET << endl;
               event->setAlDevice1(1);
               useIOPrinterQ[event->getType()] = event;
             }
           }
-          if (event->getAllocation().device2 == 0){ // Device 2 Scanner
-            if (useIOScannerQ.size() >= MaxDevice2){
+          if (event->getAllocation().device2 == 0){  // Device 2 Scanner
+            if (useIOScannerQ.size() >= MaxDevice2){  // Verifica se existe mais dispositivos alocados do que o máximo
               cout << GREEN << "maxima alocacao do dispositivo 2, " << BOLD << event->getType() << UNBOLD << " na fila de espera" << RESET << endl;
               waitIOScannerQ.push(event);
-            } else {
+            } else {  // Alocação do dispositivo 2
               cout << GREEN << "scanner reservado para " << BOLD << event->getType() << RESET << endl;
               event->setAlDevice2(1);
               useIOScannerQ[event->getType()] = event;
             }
           }
-          if (event->getAllocation().device1 != 0 && event->getAllocation().device2 != 0){
+          if (event->getAllocation().device1 != 0 && event->getAllocation().device2 != 0){  // verifica se os dispositivos foram alocados
             event->setInstant(0);
             event->setFlag(4);event->setStatus(0);
             eventlist.insert(event);
@@ -232,15 +245,15 @@ void eventEngine(EventList eventlist){
           break;
 
         // ALOCAÇÃO DE PROCESSADOR OU FILA DE PROCESSAMENTO
-        case 4:
+        case 4:  // ==============================================================================================
           if (event->getStatus() == 0){  // triagem da task no CPU
             if ((waitCPUQ.size() + tasksBlocked.size()) >= MaxwaitListCPU){  // Número máximo de job processando
               waitProcessQ.push(event);
               break;
             } else {
               event->setStatus(1);
-              if ((waitCPUQ.size()) > 0){  // Lista já tem item á frente
-                if (showInstantOfActions){cout << GREEN << "instante:" << instant << " ,";}
+              if ((waitCPUQ.size()) > 0){  // Já existe task ocorrendo, entrand na fila de espera
+                if (showInstantOfActions){cout << GREEN << "instante:" << instant << " ";}
                 cout << GREEN << BOLD << event->getType() << UNBOLD << " pronta, esperando CPU" << RESET << endl;
                 waitCPUQ.push(event);
                 break;  
@@ -251,33 +264,46 @@ void eventEngine(EventList eventlist){
           status = event->getStatus();
           if (status == 1){  // Começo das task
             cputime = event->getcpuTime();
+            totaldevice = event->getCurrentMemoryNode()->getdevice1() + event->getCurrentMemoryNode()->getdevice2();
+            cputime = cputime / (totaldevice + 1);  // Dividir o tempo em partes iguais para entrada e saída
             cpuUsage = true;
             CPUMARK = timeSlice;
-            if(cputime > timeSlice){  // Se o programa ainda tem tempo maior que o time slice
+            if(cputime > timeSlice){  // Se o programa tem tempo maior que o time slice
               prev_termino = timeSlice + instant;
-              event->setInstant(prev_termino);event->setFlag(5);
-              event->setcpuTime(cputime - timeSlice);
+              event->setInstant(prev_termino);
+              event->setFlag(5);
+              event->setcpuTime(event->getcpuTime() - timeSlice);
+              if (totaldevice > 0){  // caso tenha interrupção de dispositivo
+                event->setFlag(4);event->setStatus(4);
+              }
 
-            } else {  // Caso programa tenha menos tempo que o próprio time slice
+            } else {  // Caso programa tenha tempo menor que o time slice
               prev_termino = instant + cputime;
               event->setInstant(prev_termino);
-              if (event->getCurrentMemoryNode()->branch == 0){
+              if (event->getCurrentMemoryNode()->branch == 0){  // Caso seja o ultimo node
                 event->setFlag(5);
               } else {
                 timesliceleft = timeSlice - cputime;
                 event->setFlag(4);event->setStatus(2);
               }
-              event->setcpuTime(0);
+              if (totaldevice > 0){  // caso tenha interrupção de dispositivo
+                event->setFlag(4);event->setStatus(4);
+              }
+              if (totaldevice > 0){
+                event->setcpuTime(event->getcpuTime() - cputime);
+              } else {
+                event->setcpuTime(0);
+              }
             };
 
             eventlist.insert(event);
             if (showInstantOfActions){cout << GREEN << "instante:" << instant << " ";}
             cout << GREEN << "alocacao de processador do job: " << BOLD << event->getType() << RESET << endl;
 
-          } else if (status == 2) {  // Verificar se vai ocorrer interrupção
+          } else if (status == 2) {  // Verificar se irá ocorrerá interrupção de memória
             int randomInt = 0;
             if (randomInt == event->getCurrentMemoryNode()->getNext() || event->getCurrentMemoryNode()->branch == 1){  
-              // Confirma segmento ja carregado
+              // Segmnento requerido já carregado na memória
               event->getMemoryTree()->changeNode();
               event->setcpuTime(event->getCurrentMemoryNode()->getcpuT());
               cputime = event->getcpuTime();
@@ -302,35 +328,90 @@ void eventEngine(EventList eventlist){
               waitCPUQ.pop();
               cpuUsage = false;
               eventHandled = event;
+              event->setStatus(3);
               tasksBlocked[event->getType()] = event; // Bloquear a task
               if (showInstantOfActions){cout << RED << "instante:" << instant << " ";}
-              cout << RED << "INTERRUPCAO MEMORIA: " << eventHandled->getType() << RESET << endl;
               eventFree = new EventNode(0 ,"INTERRUPTION: MEMORY", memoryIMemory, 0);
               eventFree->setFlag(4);eventFree->setStatus(3);
               eventlist.insert(eventFree);
             }
 
-          } else if (status) {  // INTERRUPÇÃO
-            // cout << RED << "INTERRUPCAO DE MEMORIA: " << eventHandled->getType() << RESET << endl;
-            if (waitMemoryQ.empty()){
+          } else if (status == 3) {  // INTERRUPÇÃO DE MEMÓRIA
+            if (event->getType() == "INTERRUPTION: MEMORY"){
+              if (showInstantOfActions){cout << RED << "instante:" << instant << " ";}
+              cout << RED << "INTERRUPCAO MEMORIA: " << BOLD << eventHandled->getType() << RESET << endl;
+            } else {
+              eventHandled = event;
+            }
+            if (waitMemoryQ.empty()){  // Caso não tenha nenhum programa usando memória, processa direto
               if (showInstantOfActions){cout << CYAN << "instante:" << instant << " ";}
               cout << CYAN << "iniciando alocacao da " << BOLD << eventHandled->getType() << RESET << endl;
               eventHandled->setInstant(instant + timeToMemoryProcess);eventHandled->setFlag(6);eventHandled->setStatus(1);
               eventlist.insert(eventHandled);
             }
-            waitMemoryQ.push(event);
-            if (!waitCPUQ.empty()){
+            waitMemoryQ.push(eventHandled);
+            if (!waitCPUQ.empty()){  // Caso a CPU ja esteja utilizada
               eventFree = waitCPUQ.front();
               if (showInstantOfActions){cout << GREEN << "instante:" << instant << " ";}
               cout << GREEN << "preparando job " << BOLD << eventFree->getType() << UNBOLD << " para processamento" << RESET << endl;
               eventFree->setInstant(instant);eventFree->setFlag(4);eventFree->setStatus(1);
               eventlist.insert(eventFree);
             }
+
+          } else  if (status == 4){  // Preparar interrupção de dispositivo
+            waitCPUQ.pop();
+            cpuUsage = false;
+            eventHandled = event;
+            event->setStatus(5);
+            tasksBlocked[event->getType()] = event; // Bloquear a task
+            eventFree = new EventNode(0 ,"INTERRUPTION: DEVICE", memoryIMemory, 0);
+            eventFree->setFlag(4);eventFree->setStatus(5);
+            eventlist.insert(eventFree);
+
+          } else if (status == 5){  // INTERRUPÇÃO DE DEVICE
+            if (event->getType() == "INTERRUPTION: DEVICE"){
+              if (showInstantOfActions){cout << RED << "instante:" << instant << " ";}
+              cout << RED << "INTERRUPCAO DISPOSITIVO: " << BOLD << eventHandled->getType() << RESET << endl;
+            } else {
+              eventHandled = event;
+            }
+            device1 = eventHandled->getCurrentMemoryNode()->getdevice1();
+            device2 = eventHandled->getCurrentMemoryNode()->getdevice2();
+            cout << "device 1: " << device1 << ", 2: " << device2 << endl;
+            if (device1 > 0 && (randomBinary() == 0 || device2 == 0)){  // Ajusta para uso do dispositivo 1 PRINTER
+              if (!device1Used){
+                eventHandled->getCurrentMemoryNode()->setdevice1(device1 - 1);
+                if (showInstantOfActions){cout << CYAN << "instante:" << instant << " ";}
+                cout << CYAN << "Espera de entrada e saida dispositivo 1, Impressora, para " << BOLD << eventHandled->getType() << RESET << endl;
+                eventHandled->setStatus(0);
+                eventHandled->setInstant(instant + timeWaitDevice1);
+                device1Used = true;
+              } else {
+                cout << "device 1: " << device1 << endl;
+                eventHandled->setStatus(2);
+                eventHandled->setInstant(0);
+              }
+            } else if (device2 > 0){  // Ajusta para uso do dispositivo 2 SCANNER
+              if (!device2Used){
+                eventHandled->getCurrentMemoryNode()->setdevice2(device2 - 1);
+                if (showInstantOfActions){cout << GREEN << "instante:" << instant << " ";}
+                cout << CYAN << "Espera de entrada e saida dispositivo 2, Scanner, para " << BOLD << eventHandled->getType() << RESET << endl;
+                eventHandled->setStatus(3);
+                eventHandled->setInstant(instant + timeWaitDevice2);
+                device2Used = true;
+              } else {
+                cout << "device 2: " << device2 << endl;
+                eventHandled->setStatus(4);
+                eventHandled->setInstant(0);
+              }
+            }
+            eventHandled->setFlag(6);
+            eventlist.insert(eventHandled);
           }
           break;
         
         // LIBERAÇÃO DE PROCESSADOR
-        case 5:
+        case 5:  // ==============================================================================================
           if (showInstantOfActions){cout << BLUE << "instante:" << instant << " ";}
           cout << BLUE << "liberacao de processador do job: " << BOLD << event->getType() << RESET << endl;
 
@@ -369,8 +450,8 @@ void eventEngine(EventList eventlist){
           break;
         
         // TRATAMENTO DE TASK BLOQUEADA
-        case 6:
-          if (event->getStatus() == 1){
+        case 6:  // ==============================================================================================
+          if (event->getStatus() == 1){  // Tratamento de memória
             if (showInstantOfActions){cout << YELLOW << "instante:" << instant << " ";}
             cout << YELLOW << "realocacao: " << BOLD << event->getType() << RESET << endl;
             status = memorySystem.Unallocate(event->getType(), event->getMemoryTree(), false);
@@ -397,23 +478,86 @@ void eventEngine(EventList eventlist){
               eventlist.insert(event);
             }
             waitCPUQ.push(event);
+
+
+          } else if (event->getStatus() == 0){  // Tratamento do Device 1
+            device1Used = false;
+            if (showInstantOfActions){cout << GREEN << "instante:" << instant << " ";}
+            cout << GREEN << "resposta de entrada e saida de impressora, dispositivo 1, resolvido para " << event->getType() << endl;
+            event->setInstant(0);
+            event->setFlag(4); event->setStatus(1);
+
+            auto it = tasksBlocked.find(event->getType());  // Retira de task bloqueada
+            if (it != tasksBlocked.end()){
+              tasksBlocked.erase(it);
+            };
+
+            if (!waitPrinterBusyQ.empty()){  // Ajusta task esperando por dispositivo 1 impressora
+              eventFree = waitPrinterBusyQ.front();
+              waitPrinterBusyQ.pop();
+              eventFree->setInstant(instant);
+              eventlist.insert(eventFree);
+            }
+
+            if (waitCPUQ.empty()){  // Já existe task ocorrendo, entrand na fila de espera
+              event->setInstant(instant);event->setFlag(4);
+              eventlist.insert(event);
+            }
+            waitCPUQ.push(event);
+
+          } else if (event->getStatus() == 3){  // Tratamento do device 2
+            device2Used = false;
+            if (showInstantOfActions){cout << GREEN << "instante:" << instant << " ";}
+            cout << GREEN << "resposta de entrada e saida de scanner, dispositivo 2, resolvido para " << event->getType() << endl;
+            event->setInstant(0);
+            event->setFlag(4); event->setStatus(1);
+
+            auto it = tasksBlocked.find(event->getType());  // Retira de task bloqueada
+            if (it != tasksBlocked.end()){
+              tasksBlocked.erase(it);
+            };
+
+            if (!waitScannerBusyQ.empty()){  // Ajusta task esperando por dispositivo 2 scanner
+              eventFree = waitScannerBusyQ.front();
+              waitScannerBusyQ.pop();
+              eventFree->setInstant(instant);
+              eventlist.insert(eventFree);
+            }
+
+            if (waitCPUQ.empty()){  // Já existe task ocorrendo, entrand na fila de espera
+              event->setInstant(instant);event->setFlag(4);
+              eventlist.insert(event);
+            }
+            waitCPUQ.push(event);
+
+          } else if (event->getStatus() == 2){  // Lista de espera
+            if (showInstantOfActions){cout << BLUE << "instante:" << instant << " ";}
+            cout << BLUE << BOLD << event->getType() << UNBOLD << " sendo esperando dispositivo 1, impressora" << RESET << endl;
+            waitPrinterBusyQ.push(event);
+          } else if (event->getStatus() == 4){  // Lista de espera
+            if (showInstantOfActions){cout << BLUE << "instante:" << instant << " ";}
+            cout << BLUE << BOLD << event->getType() << UNBOLD << " sendo esperando dispositivo 2, scanner" << RESET << endl;
+            waitScannerBusyQ.push(event);
           }
           break;
 
         // DESALOCAR DISPOSITIVOS
-        case 7:
+        case 7:  // ==============================================================================================
           status = 0; 
           if (event->getAllocation().device1 == 1){ // Desalocando dispositivo 1 Printer
             auto it = useIOPrinterQ.find(event->getType());
             if (it != useIOPrinterQ.end()){
+              if (showInstantOfActions){cout << BLUE << "instante:" << instant << " ";}
               cout << BLUE << "desalocando dispositivo 1, Scanner, para" << BOLD << event->getType() << RESET << endl;
               useIOPrinterQ.erase(it);
             } else {
+              if (showInstantOfActions){cout << MAGENTA << "instante:" << instant << " ";}
               cout << MAGENTA << "erro ao desalocar dispositivo 1, Scanner, para" << BOLD << event->getType() << RESET << endl; 
               break;
             };
             if (!waitIOPrinterQ.empty()){
               eventFree = waitIOPrinterQ.front();
+              if (showInstantOfActions){cout << CYAN << "instante:" << instant << " ";}
               cout << CYAN << "preparando dispositivo 1, Scanner, para alocar a " << BOLD << eventFree->getType() << RESET << endl;
               waitIOPrinterQ.pop();
               status = 1;
@@ -422,14 +566,17 @@ void eventEngine(EventList eventlist){
           if (event->getAllocation().device2 == 1){ // Desalocando dispositivo 2 Scanner
             auto it = useIOScannerQ.find(event->getType());
             if (it != useIOScannerQ.end()){
+              if (showInstantOfActions){cout << BLUE << "instante:" << instant << " ";}
               cout << BLUE << "desalocando dispositivo 2, Scanner, para" << BOLD << event->getType() << RESET << endl;
               useIOScannerQ.erase(it);
             } else{
+              if (showInstantOfActions){cout << MAGENTA << "instante:" << instant << " ";}
               cout << MAGENTA << "erro ao desalocar dispositivo 2, Scanner, para" << BOLD << event->getType() << RESET << endl;
               break;
             };
             if (!waitIOScannerQ.empty()){
               eventFree = waitIOScannerQ.front();
+              if (showInstantOfActions){cout << CYAN << "instante:" << instant << " ";}
               cout << CYAN << "preparando dispositivo 2, Scanner, para alocar a " << BOLD << eventFree->getType() << RESET << endl;
               waitIOScannerQ.pop();
               status = 1;
@@ -446,7 +593,7 @@ void eventEngine(EventList eventlist){
           break;
 
         // LIBERAÇÃO DE MEMÓRIA
-        case 8:
+        case 8:  // ==============================================================================================
           if (showInstantOfActions){cout << BLUE << "instante:" << instant << " ";}
           cout << BLUE << "desalocando memoria do job: " << BOLD << event->getType() << RESET << endl;
           event->getMemoryTree()->current = event->getMemoryTree()->head;
@@ -472,7 +619,7 @@ void eventEngine(EventList eventlist){
           break;
         
         // SAÍDA DO SISTEMA
-        case 9:
+        case 9:  // ==============================================================================================
           if (showInstantOfActions){cout << BLUE << "instante:" << instant << " ";}
           cout << BLUE << "saida do sistema do job: " << BOLD << event->getType() << RESET << endl;
           if (showListOfEvents){

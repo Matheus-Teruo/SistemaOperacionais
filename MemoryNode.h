@@ -16,6 +16,9 @@ class MemoryNode{
     int getdevice1() const;
     int getdevice2() const;
     int getNext() const;
+
+    void setdevice1(int s);
+    void setdevice2(int s);
     void setNext(int n);
     
   private:
