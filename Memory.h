@@ -28,6 +28,8 @@ class Memory{
     int Unallocate(string t, MemoryTree* tree, bool k);  // return position
     void Unload(string t, MemoryNode* node, int s);
     void Show();
+    vector<logicalMemory> getAllocated() const;
+    map<int,logicalMemory> getPointers() const; 
 
   private:
     int memory;

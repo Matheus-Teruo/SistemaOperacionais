@@ -250,3 +250,11 @@ void Memory::Show(){
     cout << "===================================================================" << "\033[0m" << endl;
   }
 }
+
+vector<logicalMemory> Memory::getAllocated() const{
+  return Allocated;
+}
+
+map<int,logicalMemory> Memory::getPointers() const{
+ return pointers;
+}

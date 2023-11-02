@@ -4,6 +4,7 @@
 #include "Memory.h"
 #include "RandomFunction.h"
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <list>
 #include <queue>
@@ -35,6 +36,27 @@ bool showInstantOfActions = true;
 bool showEventExtract = true;
 bool showListOfEvents = true;
 bool showMemoryChanges = true;
+
+// prints
+struct memoryVec{
+  int start;
+  int total;
+};
+
+struct memoryVecSeg{
+  int ID;
+  int start;
+  int total;
+};
+
+vector<memoryVec> printVecMen1;
+vector<memoryVec> printVecMen2;
+vector<memoryVec> printVecMen3;
+vector<memoryVec> printVecMen4;
+vector<vector<memoryVecSeg>> printVecSeg1;
+vector<vector<memoryVecSeg>> printVecSeg2;
+vector<vector<memoryVecSeg>> printVecSeg3;
+vector<vector<memoryVecSeg>> printVecSeg4;
 
 // PC resources
 int memory = 300; //Mb
@@ -72,6 +94,39 @@ EventList setup() {
   
   return eventlist;
 };
+
+void saveMenToCSV(const string& filename, const vector<memoryVec> data) {
+    ofstream file(filename);
+
+    if (file.is_open()) {
+        for (const auto& element : data) {
+            file << element.start << "," << element.total << "\n";
+        }
+        file.close();
+        cout << "Data saved to " << filename << endl;
+    }
+    else {
+        cerr << "Unable to open file: " << filename << endl;
+    }
+}
+
+void saveSegmentToCSV(const string& filename, const vector<vector<memoryVecSeg>> data) {
+    ofstream file(filename);
+
+    if (file.is_open()) {
+        for (const auto row : data) {
+            for (const auto element : row) {
+                file << element.ID << "," << element.start << "," << element.total << ",";
+            }
+            file << "\n";
+        }
+        file.close();
+        cout << "Data saved to " << filename << endl;
+    }
+    else {
+        cerr << "Unable to open file: " << filename << endl;
+    }
+}
 
 void eventEngine(EventList eventlist){
   
@@ -652,9 +707,80 @@ void eventEngine(EventList eventlist){
     }
     if (eventlist.head == nullptr){
       simulation = false;
+      cout << "oxe2" << endl;
     }
+    //  Print Memory
+    memoryVec pMenAT1 = memoryVec{0, 0};
+    memoryVec pMenAT2 = memoryVec{0, 0};
+    memoryVec pMenAT3 = memoryVec{0, 0};
+    memoryVec pMenAT4 = memoryVec{0, 0};
+
+    for (const logicalMemory lm : memorySystem.getAllocated()) {
+      if (lm.type == "Task1"){
+        pMenAT1 = memoryVec{lm.start,lm.total};
+      } else if (lm.type == "Task2"){
+        pMenAT2 = memoryVec{lm.start,lm.total};
+      } else if (lm.type == "Task3"){
+        pMenAT3 = memoryVec{lm.start,lm.total};
+      } else if (lm.type == "Task4"){
+        pMenAT4 = memoryVec{lm.start,lm.total};
+      }
+    }
+
+    vector<memoryVecSeg> rowMen1;
+    vector<memoryVecSeg> rowMen2;
+    vector<memoryVecSeg> rowMen3;
+    vector<memoryVecSeg> rowMen4;
+
+    for (const auto lm : memorySystem.getPointers()){
+      if (lm.second.type == "Task1"){
+        rowMen1.push_back(memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total});
+      } else if (lm.second.type == "Task2"){
+        rowMen2.push_back(memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total});
+      } else if (lm.second.type == "Task3"){
+        rowMen3.push_back(memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total});
+      } else if (lm.second.type == "Task4"){
+        rowMen4.push_back(memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total});
+      }
+    };
+
+    if (rowMen1.empty()){
+      rowMen1.push_back(memoryVecSeg{0, 0, 0});
+    }
+    if (rowMen2.empty()){
+      rowMen2.push_back(memoryVecSeg{0, 0, 0});
+    }
+    if (rowMen3.empty()){
+      rowMen3.push_back(memoryVecSeg{0, 0, 0});
+    }
+    if (rowMen4.empty()){
+      rowMen4.push_back(memoryVecSeg{0, 0, 0});
+    }
+
+    printVecMen1.push_back(pMenAT1);
+    printVecMen2.push_back(pMenAT2);
+    printVecMen3.push_back(pMenAT3);
+    printVecMen4.push_back(pMenAT4);
+
+    printVecSeg1.push_back(rowMen1);
+    printVecSeg2.push_back(rowMen2);
+    printVecSeg3.push_back(rowMen3);
+    printVecSeg4.push_back(rowMen4);
+
     // this_thread::sleep_for(chrono::milliseconds(100));
   }
+  cout << "oxe1" << endl;
+  saveMenToCSV("results/MenTask1.csv", printVecMen1);
+  saveMenToCSV("results/MenTask2.csv", printVecMen2);
+  saveMenToCSV("results/MenTask3.csv", printVecMen3);
+  saveMenToCSV("results/MenTask4.csv", printVecMen4);
+
+  saveSegmentToCSV("results/SegmentosTask1.csv", printVecSeg1);
+  saveSegmentToCSV("results/SegmentosTask2.csv", printVecSeg2);
+  saveSegmentToCSV("results/SegmentosTask3.csv", printVecSeg3);
+  saveSegmentToCSV("results/SegmentosTask4.csv", printVecSeg4);
+  cout << "oxe" << endl;
+  return;
 }
 
 int main() {
@@ -663,5 +789,6 @@ int main() {
 
   // Motor de eventos
   eventEngine(eventlist);
+  cout << "como assim" << endl;
   return 0;
 };
