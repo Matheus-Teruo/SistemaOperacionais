@@ -187,7 +187,7 @@ void eventEngine(EventList eventlist){
       }
     };
 
-    while (eventlist.head->getInstant() <= instant){
+    while (simulation && eventlist.head->getInstant() <= instant){
       event = eventlist.takeEvent();
 
       // Print de retirada da lista
@@ -702,14 +702,12 @@ void eventEngine(EventList eventlist){
           if (showListOfEvents){
             eventlist.display();
           }
-          break;
+          if (eventlist.head == nullptr){
+            simulation = false;
+          }
+            break;
       }
     }
-    if (eventlist.head == nullptr){
-      simulation = false;
-      cout << "oxe2" << endl;
-    }
-    //  Print Memory
     memoryVec pMenAT1 = memoryVec{0, 0};
     memoryVec pMenAT2 = memoryVec{0, 0};
     memoryVec pMenAT3 = memoryVec{0, 0};
@@ -769,7 +767,6 @@ void eventEngine(EventList eventlist){
 
     // this_thread::sleep_for(chrono::milliseconds(100));
   }
-  cout << "oxe1" << endl;
   saveMenToCSV("results/MenTask1.csv", printVecMen1);
   saveMenToCSV("results/MenTask2.csv", printVecMen2);
   saveMenToCSV("results/MenTask3.csv", printVecMen3);
@@ -779,7 +776,6 @@ void eventEngine(EventList eventlist){
   saveSegmentToCSV("results/SegmentosTask2.csv", printVecSeg2);
   saveSegmentToCSV("results/SegmentosTask3.csv", printVecSeg3);
   saveSegmentToCSV("results/SegmentosTask4.csv", printVecSeg4);
-  cout << "oxe" << endl;
   return;
 }
 
@@ -789,6 +785,6 @@ int main() {
 
   // Motor de eventos
   eventEngine(eventlist);
-  cout << "como assim" << endl;
+  cout << "Finalizacao da simulacao" << endl;
   return 0;
 };
