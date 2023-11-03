@@ -63,19 +63,19 @@ vector<vector<memoryVecSeg>> printVecSeg2;
 vector<vector<memoryVecSeg>> printVecSeg3;
 vector<vector<memoryVecSeg>> printVecSeg4;
 
-vector<memoryVec> printVecDisp1;
-vector<memoryVec> printVecDisp2;
-vector<memoryVec> printVecDisp3;
-vector<memoryVec> printVecDisp4;
+vector<cpuVec> printVecDisp1;
+vector<cpuVec> printVecDisp2;
+vector<cpuVec> printVecDisp3;
+vector<cpuVec> printVecDisp4;
 
 vector<cpuVec> printVecCPU1;
 vector<cpuVec> printVecCPU2;
 vector<cpuVec> printVecCPU3;
 vector<cpuVec> printVecCPU4;
-vector<int> printVecTask1;
-vector<int> printVecTask2;
-vector<int> printVecTask3;
-vector<int> printVecTask4;
+vector<cpuVec> printVecTask1;
+vector<cpuVec> printVecTask2;
+vector<cpuVec> printVecTask3;
+vector<cpuVec> printVecTask4;
 
 // PC resources
 int memory = 300; //Mb
@@ -153,21 +153,6 @@ void saveCPUToCSV(const string& filename, const vector<cpuVec> data) {
     if (file.is_open()) {
         for (const auto& element : data) {
             file << element.type << "," << element.instant << "\n";
-        }
-        file.close();
-        cout << "Data saved to " << filename << endl;
-    }
-    else {
-        cerr << "Unable to open file: " << filename << endl;
-    }
-}
-
-void saveTaskToCSV(const string& filename, const vector<int> data) {
-    ofstream file(filename);
-
-    if (file.is_open()) {
-        for (const auto& element : data) {
-            file << element << "\n";
         }
         file.close();
         cout << "Data saved to " << filename << endl;
@@ -264,16 +249,16 @@ void eventEngine(EventList eventlist){
         // INGRESSO DO JOB AO SISTEMA
         case 1:  // ==============================================================================================
           if (event->getType() == "Task1"){  // PRINT ============================
-            printtask1 = 1;
+            printVecTask1.push_back(cpuVec{instant,"arrival"});
             printVecCPU1.push_back(cpuVec{instant,"arrival"});
           }else if (event->getType() == "Task2"){
-            printtask2 = 1;
+            printVecTask2.push_back(cpuVec{instant,"arrival"});
             printVecCPU2.push_back(cpuVec{instant,"arrival"});
           }else if (event->getType() == "Task3"){
-            printtask3 = 1;
+            printVecTask3.push_back(cpuVec{instant,"arrival"});
             printVecCPU3.push_back(cpuVec{instant,"arrival"});
           }else if (event->getType() == "Task4"){
-            printtask4 = 1;
+            printVecTask4.push_back(cpuVec{instant,"arrival"});
             printVecCPU4.push_back(cpuVec{instant,"arrival"});
           };
           
@@ -389,16 +374,28 @@ void eventEngine(EventList eventlist){
           if (status == 1){  // Começo das task
 
             if (event->getType() == "Task1"){  // PRINT ====================
-              printtask1 = 2;
+              if (printtask1 != 1) {
+                printtask1 = 1;
+                printVecTask1.push_back(cpuVec{instant,"cpuStart"});
+              }
               printVecCPU1.push_back(cpuVec{instant,"cpuStart"});
             }else if (event->getType() == "Task2"){
-              printtask2 = 2;
+              if (printtask2 != 1) {
+                printtask2 = 1;
+                printVecTask2.push_back(cpuVec{instant,"cpuStart"});
+              }
               printVecCPU2.push_back(cpuVec{instant,"cpuStart"});
             }else if (event->getType() == "Task3"){
-              printtask3 = 2;
+              if (printtask3 != 1) {
+                printtask3 = 1;
+                printVecTask3.push_back(cpuVec{instant,"cpuStart"});
+              }
               printVecCPU3.push_back(cpuVec{instant,"cpuStart"});
             }else if (event->getType() == "Task4"){
-              printtask4 = 2;
+              if (printtask4 != 1) {
+                printtask4 = 1;
+                printVecTask4.push_back(cpuVec{instant,"cpuStart"});
+              }
               printVecCPU4.push_back(cpuVec{instant,"cpuStart"});
             };
 
@@ -476,7 +473,7 @@ void eventEngine(EventList eventlist){
 
             } else {  // Ocorrência de erro de segmento INTERRUPÇÃO DE MEMÓRIA
 
-              if (event->getType() == "Task1"){
+              if (event->getType() == "Task1"){  // PRINT ====================
                 printVecCPU1.push_back(cpuVec{instant,"cpuEnd"});
               }else if (event->getType() == "Task2"){
                 printVecCPU2.push_back(cpuVec{instant,"cpuEnd"});
@@ -522,7 +519,7 @@ void eventEngine(EventList eventlist){
             waitCPUQ.pop();
             cpuUsage = false;
 
-            if (event->getType() == "Task1"){
+            if (event->getType() == "Task1"){  // PRINT ====================
               printVecCPU1.push_back(cpuVec{instant,"cpuEnd"});
             }else if (event->getType() == "Task2"){
               printVecCPU2.push_back(cpuVec{instant,"cpuEnd"});
@@ -565,6 +562,17 @@ void eventEngine(EventList eventlist){
                 eventHandled->setStatus(0);
                 eventHandled->setInstant(instant + timeWaitDevice1);
                 device1Used = true;
+
+                if (eventHandled->getType() == "Task1"){  // PRINT ====================
+                  printVecDisp1.push_back(cpuVec{instant,"device1Start"});
+                }else if (eventHandled->getType() == "Task2"){
+                  printVecDisp2.push_back(cpuVec{instant,"device1Start"});
+                }else if (eventHandled->getType() == "Task3"){
+                  printVecDisp3.push_back(cpuVec{instant,"device1Start"});
+                }else if (eventHandled->getType() == "Task4"){
+                  printVecDisp4.push_back(cpuVec{instant,"device1Start"});
+                };
+                
               } else {
                 //cout << "device 1: " << device1 << endl;
                 eventHandled->setStatus(2);
@@ -578,6 +586,17 @@ void eventEngine(EventList eventlist){
                 eventHandled->setStatus(3);
                 eventHandled->setInstant(instant + timeWaitDevice2);
                 device2Used = true;
+
+                if (eventHandled->getType() == "Task1"){  // PRINT ====================
+                  printVecDisp1.push_back(cpuVec{instant,"device2Start"});
+                }else if (eventHandled->getType() == "Task2"){
+                  printVecDisp2.push_back(cpuVec{instant,"device2Start"});
+                }else if (eventHandled->getType() == "Task3"){
+                  printVecDisp3.push_back(cpuVec{instant,"device2Start"});
+                }else if (eventHandled->getType() == "Task4"){
+                  printVecDisp4.push_back(cpuVec{instant,"device2Start"});
+                };
+
               } else {
                 //cout << "device 2: " << device2 << endl;
                 eventHandled->setStatus(4);
@@ -598,17 +617,17 @@ void eventEngine(EventList eventlist){
             waitCPUQ.pop();  // Retira da lista
             cpuUsage = false;
 
-            if (event->getType() == "Task1"){
-              printtask1 = 0;
+            if (event->getType() == "Task1"){  // PRINT ====================
+              printVecTask1.push_back(cpuVec{instant,"cpuEnd"});
               printVecCPU1.push_back(cpuVec{instant,"cpuEnd"});
             }else if (event->getType() == "Task2"){
-              printtask2 = 0;
+              printVecTask2.push_back(cpuVec{instant,"cpuEnd"});
               printVecCPU2.push_back(cpuVec{instant,"cpuEnd"});
             }else if (event->getType() == "Task3"){
-              printtask3 = 0;
+              printVecTask3.push_back(cpuVec{instant,"cpuEnd"});
               printVecCPU3.push_back(cpuVec{instant,"cpuEnd"});
             }else if (event->getType() == "Task4"){
-              printtask4 = 0;
+              printVecTask4.push_back(cpuVec{instant,"cpuEnd"});
               printVecCPU4.push_back(cpuVec{instant,"cpuEnd"});
             };
 
@@ -632,7 +651,7 @@ void eventEngine(EventList eventlist){
             waitCPUQ.pop();
             cpuUsage = false;
 
-            if (event->getType() == "Task1"){
+            if (event->getType() == "Task1"){  // PRINT ====================
               printVecCPU1.push_back(cpuVec{instant,"cpuEnd"});
             }else if (event->getType() == "Task2"){
               printVecCPU2.push_back(cpuVec{instant,"cpuEnd"});
@@ -686,6 +705,16 @@ void eventEngine(EventList eventlist){
 
 
           } else if (event->getStatus() == 0){  // Tratamento do Device 1
+    	      if (event->getType() == "Task1"){  // PRINT ====================
+              printVecDisp1.push_back(cpuVec{instant,"device1End"});
+            }else if (event->getType() == "Task2"){
+              printVecDisp2.push_back(cpuVec{instant,"device1End"});
+            }else if (event->getType() == "Task3"){
+              printVecDisp3.push_back(cpuVec{instant,"device1End"});
+            }else if (event->getType() == "Task4"){
+              printVecDisp4.push_back(cpuVec{instant,"device1End"});
+            };
+
             device1Used = false;
             if (showInstantOfActions){cout << LIGHT_GREEN << "instante:" << instant << " ";}
             cout << LIGHT_GREEN << "finalizacao de entrada e saida de impressora, dispositivo 1, resolvido para " << event->getType() << endl;
@@ -712,6 +741,16 @@ void eventEngine(EventList eventlist){
             waitCPUQ.push(event);
 
           } else if (event->getStatus() == 3){  // Tratamento do device 2
+            if (event->getType() == "Task1"){  // PRINT ====================
+              printVecDisp1.push_back(cpuVec{instant,"device2End"});
+            }else if (event->getType() == "Task2"){
+              printVecDisp2.push_back(cpuVec{instant,"device2End"});
+            }else if (event->getType() == "Task3"){
+              printVecDisp3.push_back(cpuVec{instant,"device2End"});
+            }else if (event->getType() == "Task4"){
+              printVecDisp4.push_back(cpuVec{instant,"device2End"});
+            };
+
             device2Used = false;
             if (showInstantOfActions){cout << LIGHT_GREEN << "instante:" << instant << " ";}
             cout << LIGHT_GREEN << "finalizacao de entrada e saida de scanner, dispositivo 2, resolvido para " << event->getType() << endl;
@@ -967,11 +1006,6 @@ void eventEngine(EventList eventlist){
     printVecSeg3.push_back(rowMen3);
     printVecSeg4.push_back(rowMen4);
 
-    printVecTask1.push_back(printtask1);
-    printVecTask2.push_back(printtask2);
-    printVecTask3.push_back(printtask3);
-    printVecTask4.push_back(printtask4);
-
   }
   saveMenToCSV("results/MenTask1.csv", printVecMen1);
   saveMenToCSV("results/MenTask2.csv", printVecMen2);
@@ -983,15 +1017,20 @@ void eventEngine(EventList eventlist){
   saveSegmentToCSV("results/SegmentosTask3.csv", printVecSeg3);
   saveSegmentToCSV("results/SegmentosTask4.csv", printVecSeg4);
 
+  saveCPUToCSV("results/Devices1.csv", printVecDisp1);
+  saveCPUToCSV("results/Devices2.csv", printVecDisp2);
+  saveCPUToCSV("results/Devices3.csv", printVecDisp3);
+  saveCPUToCSV("results/Devices4.csv", printVecDisp4);
+
   saveCPUToCSV("results/CPUTask1.csv", printVecCPU1);
   saveCPUToCSV("results/CPUTask2.csv", printVecCPU2);
   saveCPUToCSV("results/CPUTask3.csv", printVecCPU3);
   saveCPUToCSV("results/CPUTask4.csv", printVecCPU4);
 
-  saveTaskToCSV("results/Task1.csv", printVecTask1);
-  saveTaskToCSV("results/Task2.csv", printVecTask2);
-  saveTaskToCSV("results/Task3.csv", printVecTask3);
-  saveTaskToCSV("results/Task4.csv", printVecTask4);
+  saveCPUToCSV("results/Task1.csv", printVecTask1);
+  saveCPUToCSV("results/Task2.csv", printVecTask2);
+  saveCPUToCSV("results/Task3.csv", printVecTask3);
+  saveCPUToCSV("results/Task4.csv", printVecTask4);
 
   return;
 }
