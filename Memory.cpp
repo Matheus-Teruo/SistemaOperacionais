@@ -46,7 +46,7 @@ int Memory::Allocate(string t, MemoryTree* tree, bool v){
       }
       return startspace;
     }
-    startspace = location->total + location->start + 1;
+    startspace = location->total + location->start;
     ++location;
   };
   endspace = memory;
@@ -87,7 +87,7 @@ void Memory::Loader(string t, MemoryNode* node ,int s){
       aux = aux->left;
     }
     branch = aux->branch;
-    startspace += total + 1;
+    startspace += total;
   };
   mapping /= 10;
   pointers[s] = logicalMemory{t, s, 5, 0, 0, 0, 0, mapping};
@@ -97,7 +97,7 @@ void Memory::Reallocate(string t, MemoryTree* tree, int s){
   int mapping = pointers.find(s)->second.ID;
   int reverseMapping = invertInt(mapping);
   MemoryNode* node = tree->head;
-  int location = s + 5 + node->getMemory() + 1;
+  int location = s + 5 + node->getMemory();
   int newMapping = 0;
 
   while (node != tree->current){
@@ -108,7 +108,7 @@ void Memory::Reallocate(string t, MemoryTree* tree, int s){
     } else {
       node = node->left;
     };
-    location += (node->getMemory() + 1);
+    location += (node->getMemory());
     newMapping += digit;
     newMapping *= 10;
   };
@@ -125,7 +125,7 @@ void Memory::Reallocate(string t, MemoryTree* tree, int s){
   newMapping *= 10;
   pointers[location] = logicalMemory{t, location, node->getMemory(),
   node->getcpuT(), node->getdisk(), node->getdevice1(), node->getdevice2(), node->getID()};
-  location += (node->getMemory() + 1);
+  location += (node->getMemory() );
   while (node->branch != 0){
     if (randomBinary() == 1 || node->branch == 1){
       node->setNext(1);
@@ -180,7 +180,7 @@ void Memory::Unload(string t, MemoryNode* node, int s) {
     int digit = reverseMapping % 10;
     reverseMapping /= 10;
     while (it->second.ID != aux->getID()){
-      index += (it->second.total + 1);
+      index += (it->second.total);
       it = pointers.find(index);
       digit = reverseMapping % 10;
       reverseMapping /= 10;
@@ -196,7 +196,7 @@ void Memory::Unload(string t, MemoryNode* node, int s) {
       } else if (digit == 2){
         aux = aux->left;
       }
-      index += (it->second.total + 1);
+      index += (it->second.total);
       it = pointers.find(index);
       if (reverseMapping == 0){
         pointers.erase(it);
@@ -208,7 +208,7 @@ void Memory::Unload(string t, MemoryNode* node, int s) {
 
   if (keepSegment != 0){
     int numDigits = countDigits(mapping);
-    int newMapping = mapping / (pow(10,(numDigits - keepSegment + 1)));
+    int newMapping = mapping / (pow(10,(numDigits - keepSegment)));
     pointers[s] = logicalMemory{t, s, 5, 0, 0, 0, 0, newMapping};
   } else {
     it = pointers.find(s);
