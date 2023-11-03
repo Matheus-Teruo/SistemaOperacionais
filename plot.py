@@ -121,9 +121,9 @@ def plotDevices(files):
 
   plt.xlabel('Tempo (t)')
   plt.yticks(range(1, len(labels)+1,), labels)  # Adjusted y-axis labels for two bars per file
-  plt.ylabel('File Name')
+  plt.ylabel('Dispositivos')
   plt.ylim(0.5, len(labels) + 0.5)  # Adjusted y-axis limits for two bars per file
-  plt.title('Gráfico')
+  plt.title('Uso de dispositivos')
 
   plt.show()
 
@@ -164,9 +164,9 @@ def plotCPU(files):
     # Adiciona rótulos ao gráfico
     plt.xlabel('Tempo (t)')
     plt.yticks(range(1, index+1), file_names)  # Set y-axis labels to file names
-    plt.ylabel('File Name')
+    plt.ylabel('Tasks')
     plt.ylim(0.5, len(files) + 0.5)  # Adjusted y-axis limits
-    plt.title('Gráfico')
+    plt.title('Gráfico de status de CPU')
 
     # Mostra o gráfico
     plt.show()
@@ -179,5 +179,5 @@ filesT = ["Task1.csv","Task2.csv","Task3.csv","Task4.csv"]
 plotallocation(filesA, 300)
 plotpointers(filesP, 300)
 plotDevices(filesD)
-plotCPU(filesC)
 plotCPU(filesT)
+plotCPU(filesC)
