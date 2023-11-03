@@ -115,8 +115,11 @@ void saveSegmentToCSV(const string& filename, const vector<vector<memoryVecSeg>>
 
     if (file.is_open()) {
         for (const auto row : data) {
-            for (const auto element : row) {
-                file << element.ID << "," << element.start << "," << element.total << ",";
+            for (size_t i = 0; i < row.size(); ++i) {
+                file << row[i].ID << "," << row[i].start << "," << row[i].total;
+                if (i != row.size() - 1) {
+                    file << ",";
+                }
             }
             file << "\n";
         }
@@ -730,35 +733,105 @@ void eventEngine(EventList eventlist){
     vector<memoryVecSeg> rowMen3;
     vector<memoryVecSeg> rowMen4;
 
+    memoryVecSeg pMenST1OL = memoryVecSeg{0, 0, 0};
+    memoryVecSeg pMenST1ID0 = memoryVecSeg{0, 0, 0};
+    memoryVecSeg pMenST1ID1 = memoryVecSeg{0, 0, 0};
+    
+    memoryVecSeg pMenST2OL = memoryVecSeg{0, 0, 0};
+    memoryVecSeg pMenST2ID0 = memoryVecSeg{0, 0, 0};
+    memoryVecSeg pMenST2ID1 = memoryVecSeg{0, 0, 0};
+    memoryVecSeg pMenST2ID2 = memoryVecSeg{0, 0, 0};
+    memoryVecSeg pMenST2ID3 = memoryVecSeg{0, 0, 0};
+    memoryVecSeg pMenST2ID4 = memoryVecSeg{0, 0, 0};
+    
+    memoryVecSeg pMenST3OL = memoryVecSeg{0, 0, 0};
+    memoryVecSeg pMenST3ID0 = memoryVecSeg{0, 0, 0};
+    memoryVecSeg pMenST3ID1 = memoryVecSeg{0, 0, 0};
+    memoryVecSeg pMenST3ID2 = memoryVecSeg{0, 0, 0};
+    memoryVecSeg pMenST3ID3 = memoryVecSeg{0, 0, 0};
+    
+    memoryVecSeg pMenST4OL = memoryVecSeg{0, 0, 0};
+    memoryVecSeg pMenST4ID0 = memoryVecSeg{0, 0, 0};
+    memoryVecSeg pMenST4ID1 = memoryVecSeg{0, 0, 0};
+    memoryVecSeg pMenST4ID2 = memoryVecSeg{0, 0, 0};
+
     for (const auto lm : memorySystem.getPointers()){
       if (lm.second.type == "Task1"){
-        rowMen1.push_back(memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total});
+        if (lm.second.cputimeseg == 0){
+          pMenST1OL = memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total};
+        }else if (lm.second.ID == 0 && lm.second.cputimeseg != 0){
+          pMenST1ID0 = memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total};
+        } else if (lm.second.ID == 1 && lm.second.cputimeseg != 0){
+          pMenST1ID1 = memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total};
+        }
+
       } else if (lm.second.type == "Task2"){
-        rowMen2.push_back(memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total});
+        if (lm.second.cputimeseg == 0){
+          pMenST2OL = memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total};
+        }else if (lm.second.ID == 0 && lm.second.cputimeseg != 0){
+          pMenST2ID0 = memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total};
+        }else if (lm.second.ID == 1 && lm.second.cputimeseg != 0){
+          pMenST2ID1 = memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total};
+        }else if (lm.second.ID == 2){
+          pMenST2ID2 = memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total};
+        }else if (lm.second.ID == 3){
+          pMenST2ID3 = memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total};
+        }else if (lm.second.ID == 4){
+          pMenST2ID4 = memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total};
+        }
+
       } else if (lm.second.type == "Task3"){
-        rowMen3.push_back(memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total});
+        if (lm.second.cputimeseg == 0){
+          pMenST3OL = memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total};
+        }else if (lm.second.ID == 0 && lm.second.cputimeseg != 0){
+          pMenST3ID0 = memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total};
+        }else if (lm.second.ID == 1 && lm.second.cputimeseg != 0){
+          pMenST3ID1 = memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total};
+        }else if (lm.second.ID == 2){
+          pMenST3ID2 = memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total};
+        }else if (lm.second.ID == 3){
+          pMenST3ID3 = memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total};
+        }
+
       } else if (lm.second.type == "Task4"){
-        rowMen4.push_back(memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total});
+        if (lm.second.cputimeseg == 0){
+          pMenST4OL = memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total};
+        }else if (lm.second.ID == 0 && lm.second.cputimeseg != 0){
+          pMenST4ID0 = memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total};
+        } else if (lm.second.ID == 1 && lm.second.cputimeseg != 0){
+          pMenST4ID1 = memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total};
+        }else if (lm.second.ID == 2){
+          pMenST4ID2 = memoryVecSeg{lm.second.ID, lm.second.start, lm.second.total};
+        }
       }
     };
-
-    if (rowMen1.empty()){
-      rowMen1.push_back(memoryVecSeg{0, 0, 0});
-    }
-    if (rowMen2.empty()){
-      rowMen2.push_back(memoryVecSeg{0, 0, 0});
-    }
-    if (rowMen3.empty()){
-      rowMen3.push_back(memoryVecSeg{0, 0, 0});
-    }
-    if (rowMen4.empty()){
-      rowMen4.push_back(memoryVecSeg{0, 0, 0});
-    }
 
     printVecMen1.push_back(pMenAT1);
     printVecMen2.push_back(pMenAT2);
     printVecMen3.push_back(pMenAT3);
     printVecMen4.push_back(pMenAT4);
+
+    rowMen1.push_back(pMenST1OL);
+    rowMen1.push_back(pMenST1ID0);
+    rowMen1.push_back(pMenST1ID1);
+
+    rowMen2.push_back(pMenST2OL);
+    rowMen2.push_back(pMenST2ID0);
+    rowMen2.push_back(pMenST2ID1);
+    rowMen2.push_back(pMenST2ID2);
+    rowMen2.push_back(pMenST2ID3);
+    rowMen2.push_back(pMenST2ID4);
+
+    rowMen3.push_back(pMenST3OL);
+    rowMen3.push_back(pMenST3ID0);
+    rowMen3.push_back(pMenST3ID1);
+    rowMen3.push_back(pMenST3ID2);
+    rowMen3.push_back(pMenST3ID3);
+
+    rowMen4.push_back(pMenST4OL);
+    rowMen4.push_back(pMenST4ID0);
+    rowMen4.push_back(pMenST4ID1);
+    rowMen4.push_back(pMenST4ID2);
 
     printVecSeg1.push_back(rowMen1);
     printVecSeg2.push_back(rowMen2);
