@@ -100,13 +100,13 @@ EventList setup() {
   // code => 1: endline, 2: parent with 1 children, 3: parent with 2 children
   MemoryTree* memorytask1 = new MemoryTree({2,30,20,0,0,0, 1,50,40,0,0,0});
   MemoryTree* memorytask2 = new MemoryTree({2,20,25,0,0,0, 3,30,40,0,2,0, 1,40,100,0,1,2, 2,50,35,0,0,1, 1,35,20,0,2,0});
-  MemoryTree* memorytask3 = new MemoryTree({3,40,20,0,1,0, 2,10,10,0,0,2, 1,20,50,0,0,1, 1,15,40,0,2,0});
+  MemoryTree* memorytask3 = new MemoryTree({3,40,20,0,1,0, 2,10,80,0,0,0, 1,20,50,0,0,1, 1,15,40,0,2,0});
   MemoryTree* memorytask4 = new MemoryTree({3,40,10,0,0,0, 1,10,30,0,1,0, 1,20,20,0,0,1});
 
   eventlist.create(20, "Task1", memorytask1, memorytask1->head->getcpuT());
   eventlist.create(20, "Task2", memorytask2, memorytask2->head->getcpuT());
-  eventlist.create(220, "Task3", memorytask3, memorytask3->head->getcpuT());
-  eventlist.create(240, "Task4", memorytask4, memorytask4->head->getcpuT()); 
+  eventlist.create(30, "Task3", memorytask3, memorytask3->head->getcpuT());
+  eventlist.create(40, "Task4", memorytask4, memorytask4->head->getcpuT()); 
   
   return eventlist;
 };
@@ -242,7 +242,7 @@ void eventEngine(EventList eventlist){
         << ", scanner:" << event->getCurrentMemoryNode()->getdevice2() << RESET << endl;
       };
       
-      //eventlist.display();  // mostrar eventos ainda dentro da lista
+      eventlist.display();  // mostrar eventos ainda dentro da lista
   
       int flag = event->getFlag();
       switch(flag){
@@ -844,18 +844,19 @@ void eventEngine(EventList eventlist){
           cout << BLUE << "desalocando memoria do job: " << BOLD << event->getType() << RESET << endl;
           event->getMemoryTree()->current = event->getMemoryTree()->head;
           status = memorySystem.Unallocate(event->getType(), event->getMemoryTree(), true);
-          if (status == -1){
+          if (status == -1){  // Desalocamento de memória corretamente
             if (!waitSpaceMemory.empty()){
               eventFree = waitSpaceMemory.front();
+              waitSpaceMemory.pop();
               if (showInstantOfActions){cout << LIGHT_GREEN << "instante:" << instant << " ";}
-              cout << LIGHT_GREEN << "preparando job " << BOLD << eventFree->getType() << UNBOLD << " para alocação de memória" << RESET << endl;
+              cout << LIGHT_GREEN << "preparando job " << BOLD << eventFree->getType() << UNBOLD << " para alocacao de memoria" << RESET << endl;
               eventFree->setInstant(instant);eventFree->setFlag(2);
               eventlist.insert(eventFree);
             };
             if (showMemoryChanges){
               memorySystem.Show();
             }
-          } else {
+          } else {  // Caso de erro
             if (showInstantOfActions){cout << MAGENTA << "instante:" << instant << " ";}
             cout << MAGENTA << "erro ao desalocar o job: " << BOLD << event->getType() << RESET << endl;    
             break;

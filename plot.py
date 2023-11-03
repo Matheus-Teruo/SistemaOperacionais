@@ -63,10 +63,10 @@ def plotpointers(files, memory):
     # Define as colunas como áreas no gráfico
     for i in range(numOP):
       if i == 0:
-        name = "Overlay"
+        name = "OL"
       else:
         name = i - 1
-      plt.fill_between(tempo,data[i*3 + 1], data[i*3 + 1] + data[i*3 + 2], color=colors[index-1][i], label=f'Memory {index}, ID: {name}', alpha=0.5)
+      plt.fill_between(tempo,data[i*3 + 1], data[i*3 + 1] + data[i*3 + 2], color=colors[index-1][i], label=f'M:{index}, ID:{name}', alpha=0.5)
 
     # Adiciona rótulos ao gráfico
     plt.xlabel('Tempo (t)')
