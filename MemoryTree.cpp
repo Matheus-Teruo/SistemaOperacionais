@@ -42,7 +42,7 @@ useDevice1(0), useDevice2(0), auxID(0){
     tree.erase(it++);memo = *it;
     tree.erase(it++);cpu = *it;
     tree.erase(it++);disk = *it;
-    tree.erase(it++);device1 = *it; useDevice2 += device2;
+    tree.erase(it++);device1 = *it; useDevice1 += device1;
     tree.erase(it++);device2 = *it; useDevice2 += device2;
     MemoryNode* no = new MemoryNode(auxID++, memo, cpu, disk, device1, device2);
     totalMemory += memo; MaxMOverlay += memo;

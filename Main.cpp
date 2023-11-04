@@ -31,10 +31,10 @@
 
 using namespace std;
 // Debug mode
-bool showInstant = true;
+bool showInstant = false;
 bool showInstantOfActions = true;
-bool showEventExtract = true;
-bool showListOfEvents = true;
+bool showEventExtract = false;
+bool showListOfEvents = false;
 bool showMemoryChanges = true;
 
 // prints
@@ -82,8 +82,8 @@ int memory = 300; //Mb
 int timeToMemoryProcess = 5;
 int MaxDevice1 = 2;
 int MaxDevice2 = 2;
-int timeWaitDevice1 = 5;
-int timeWaitDevice2 = 8;
+int timeWaitDevice1 = 15;
+int timeWaitDevice2 = 28;
 int MaxmultiProg = 5;  // ??? NÃO SEI SE USO AINDA
 int MaxwaitListCPU = 3;
 int timeSlice = 30;
@@ -99,9 +99,9 @@ EventList setup() {
   // memoryTree{code, memory, cpu, disk, device1, device2}
   // code => 1: endline, 2: parent with 1 children, 3: parent with 2 children
   MemoryTree* memorytask1 = new MemoryTree({2,30,20,0,0,0, 1,50,40,0,0,0});
-  MemoryTree* memorytask2 = new MemoryTree({2,20,25,0,0,0, 3,30,40,0,2,0, 1,40,100,0,1,2, 2,50,35,0,0,1, 1,35,20,0,2,0});
-  MemoryTree* memorytask3 = new MemoryTree({3,40,20,0,1,0, 2,10,80,0,0,0, 1,20,50,0,0,1, 1,15,40,0,2,0});
-  MemoryTree* memorytask4 = new MemoryTree({3,40,10,0,0,0, 1,10,30,0,1,0, 1,20,20,0,0,1});
+  MemoryTree* memorytask2 = new MemoryTree({2,20,25,0,0,0, 3,30,40,0,2,0, 1,40,100,0,1,2, 2,50,35,0,0,1, 1,35,50,0,2,0});
+  MemoryTree* memorytask3 = new MemoryTree({3,40,20,0,1,0, 2,10,80,0,0,0, 1,20,50,0,1,0, 1,15,40,0,3,0});
+  MemoryTree* memorytask4 = new MemoryTree({3,40,10,0,0,0, 1,10,30,0,0,2, 1,20,2,0,0,1});
 
   eventlist.create(20, "Task1", memorytask1, memorytask1->head->getcpuT());
   eventlist.create(20, "Task2", memorytask2, memorytask2->head->getcpuT());
@@ -242,7 +242,7 @@ void eventEngine(EventList eventlist){
         << ", scanner:" << event->getCurrentMemoryNode()->getdevice2() << RESET << endl;
       };
       
-      eventlist.display();  // mostrar eventos ainda dentro da lista
+      // eventlist.display();  // mostrar eventos ainda dentro da lista
   
       int flag = event->getFlag();
       switch(flag){
